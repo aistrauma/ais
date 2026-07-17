@@ -15,6 +15,9 @@ dist-ssr
 # Local feature worktrees
 .worktrees/
 
+# Subagent execution ledger
+.superpowers/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
