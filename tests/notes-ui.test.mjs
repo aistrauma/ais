@@ -94,6 +94,34 @@ test("renders load failure and retry control", async t => {
   app.destroy();
 });
 
+test("keeps the failure and retry UI when input changes after a failed load", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => { throw new Error("offline"); } });
+  await app.load();
+  const search = document.querySelector("#notesSearch");
+  search.value = "teg";
+  search.dispatchEvent(new window.Event("input"));
+  assert.match(document.querySelector("#notesStatus").textContent, /could not load/i);
+  assert.ok(document.querySelector("#notesRetry"));
+  app.destroy();
+});
+
+test("keeps the loading UI when input changes before the index resolves", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const index = deferred();
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => index.promise });
+  const loading = app.load();
+  const search = document.querySelector("#notesSearch");
+  search.value = "teg";
+  search.dispatchEvent(new window.Event("input"));
+  assert.match(document.querySelector("#notesStatus").textContent, /Loading notes/i);
+  index.resolve(response({ version: 1, notes: [] }));
+  await loading;
+  app.destroy();
+});
+
 test("shows a direct Notes hash when the index cannot load", async t => {
   const dom = installDom("#notes/teg");
   t.after(() => cleanupDom(dom));

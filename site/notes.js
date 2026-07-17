@@ -194,7 +194,9 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
     }
   };
 
-  const onInput = () => renderList();
+  const onInput = () => {
+    if (loadState === "ready") renderList();
+  };
   const onHashChange = () => { void route(); };
   const notesTab = root.closest("#viewNotes")?.ownerDocument.querySelector('[data-view="notes"]');
   const onNotesTabClick = () => {
