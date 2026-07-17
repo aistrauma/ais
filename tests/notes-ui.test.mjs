@@ -1,0 +1,182 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { JSDOM } from "jsdom";
+import { createNotesApp, filterNotes, scoreNote } from "../site/notes.js";
+
+const note = (overrides = {}) => ({
+  slug: "teg",
+  title: "Interpreting a TEG",
+  category: "Resuscitation",
+  tags: ["TEG", "coagulopathy"],
+  summary: "Targeted treatment for coagulopathy.",
+  lastReviewed: "2026-07-17",
+  sources: [{ title: "ACS guidance", url: "https://www.facs.org/" }],
+  searchText: "interpreting a teg coagulopathy",
+  fragment: "generated/notes/teg.html",
+  ...overrides
+});
+
+const FIXTURES = [
+  note({ slug: "teg", title: "Interpreting a TEG", category: "Resuscitation", searchText: "teg coagulopathy resuscitation" }),
+  note({ slug: "burn-fluids", title: "Burn fluid resuscitation", category: "Burns", tags: ["burns", "resuscitation"], searchText: "burn fluid resuscitation" }),
+  note({ slug: "burn-wounds", title: "Burn wound care", category: "Burns", tags: ["burns"], searchText: "burn wound dressing" })
+];
+
+const response = (payload, { ok = true, status = 200 } = {}) => ({
+  ok,
+  status,
+  json: async () => payload,
+  text: async () => String(payload)
+});
+
+const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+
+function installDom(hash = "") {
+  const dom = new JSDOM(`<!doctype html><body>
+    <div id="viewNotes"><button data-view="notes">Notes</button><section id="notesApp">
+      <div id="notesLanding"><input id="notesSearch"><div id="notesCategories"></div><div id="notesCount"></div><div id="notesStatus"></div><div id="notesCards"></div></div>
+      <article id="noteDetail" hidden></article>
+    </section></div>
+  </body>`, { url: `https://example.test/${hash}` });
+  globalThis.window = dom.window;
+  globalThis.document = dom.window.document;
+  globalThis.location = dom.window.location;
+  globalThis.history = dom.window.history;
+  globalThis.requestAnimationFrame = callback => callback();
+  dom.window.scrollTo = () => {};
+  return dom;
+}
+
+function cleanupDom(dom) {
+  dom.window.close();
+  delete globalThis.window;
+  delete globalThis.document;
+  delete globalThis.location;
+  delete globalThis.history;
+  delete globalThis.requestAnimationFrame;
+}
+
+test("ranks title and tag matches above body-only matches", () => {
+  const notes = [
+    note({ title: "Interpreting a TEG", tags: ["coagulopathy"], searchText: "interpreting a teg coagulopathy" }),
+    note({ slug: "massive-transfusion", title: "Massive transfusion", tags: ["blood"], searchText: "massive transfusion includes teg interpretation" })
+  ];
+  assert.equal(filterNotes(notes, { query: "teg", category: "All" })[0].slug, "teg");
+  assert.equal(scoreNote(notes[1], "missing"), -1);
+});
+
+test("combines category and keyword filters", () => {
+  const result = filterNotes(FIXTURES, { query: "resuscitation", category: "Burns" });
+  assert.deepEqual(result.map(item => item.slug), ["burn-fluids"]);
+});
+
+test("renders an empty library without throwing", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => response({ version: 1, notes: [] }) });
+  await app.load();
+  assert.match(document.querySelector("#notesStatus").textContent, /No notes have been published yet/i);
+  app.destroy();
+});
+
+test("renders load failure and retry control", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => { throw new Error("offline"); } });
+  await app.load();
+  assert.match(document.querySelector("#notesStatus").textContent, /could not load/i);
+  assert.ok(document.querySelector("#notesRetry"));
+  app.destroy();
+});
+
+test("loads a direct note hash and its sanitized fragment", async t => {
+  const dom = installDom("#notes/teg");
+  t.after(() => cleanupDom(dom));
+  let shownView = "";
+  window.showView = view => { shownView = view; };
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => url === "generated/notes-index.json"
+      ? response({ version: 1, notes: [FIXTURES[0]] })
+      : response("<h2>Thresholds</h2><p>Sanitized content.</p>")
+  });
+  await app.load();
+  assert.equal(shownView, "notes");
+  assert.match(document.querySelector("#noteDetail").textContent, /Thresholds/);
+  assert.equal(document.querySelector("#notesLanding").hidden, true);
+  app.destroy();
+});
+
+test("renders note not found for unknown and malformed note hashes", async t => {
+  const dom = installDom("#notes/missing");
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => response({ version: 1, notes: FIXTURES }) });
+  await app.load();
+  assert.match(document.querySelector("#noteDetail").textContent, /Note not found/);
+  history.replaceState(null, "", "#notes/%E0%A4%A");
+  await assert.doesNotReject(app.route());
+  assert.match(document.querySelector("#noteDetail").textContent, /Note not found/);
+  app.destroy();
+});
+
+test("Back to Notes restores the previous query and category", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => url === "generated/notes-index.json"
+      ? response({ version: 1, notes: FIXTURES })
+      : response("<p>Burn content</p>")
+  });
+  await app.load();
+  const search = document.querySelector("#notesSearch");
+  search.value = "resuscitation";
+  search.dispatchEvent(new window.Event("input"));
+  document.querySelectorAll(".note-category").forEach(button => {
+    if (button.textContent === "Burns") button.click();
+  });
+  document.querySelector(".note-card").click();
+  await tick();
+  document.querySelector(".note-back").click();
+  await tick();
+  assert.equal(search.value, "resuscitation");
+  assert.equal(document.querySelector(".note-category.active").textContent, "Burns");
+  assert.equal(document.querySelectorAll(".note-card").length, 1);
+  app.destroy();
+});
+
+test("renders index metadata as text rather than markup", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const unsafe = note({ title: '<img src=x onerror="window.bad = true">', category: "<b>Burns</b>", tags: ["<i>tag</i>"] });
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => response({ version: 1, notes: [unsafe] }) });
+  await app.load();
+  assert.equal(document.querySelector("#notesCards img"), null);
+  assert.equal(document.querySelector(".note-card-title").textContent, unsafe.title);
+  app.destroy();
+});
+
+test("destroy removes Notes navigation listeners", t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => response({ version: 1, notes: [] }) });
+  app.destroy();
+  document.querySelector('[data-view="notes"]').click();
+  assert.equal(location.hash, "");
+});
+
+test("loads the Notes tab assets and routes the shell to the Notes view", async () => {
+  const [html, css] = await Promise.all([
+    readFile(new URL("../site/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../site/notes.css", import.meta.url), "utf8")
+  ]);
+  assert.match(html, /<link rel="stylesheet" href="notes\.css">/);
+  assert.match(html, /<button data-view="notes"><span class="ticon">🗒️<\/span><span>Notes<\/span><\/button>/);
+  assert.match(html, /<div class="tview" id="viewNotes">/);
+  assert.match(html, /const VIEWS = \{ search:"viewSearch", templates:"viewTemplates", tqip:"viewTQIP", notes:"viewNotes", settings:"viewSettings" \};\s*window\.showView = showView;/);
+  assert.match(html, /<script type="module" src="notes\.js"><\/script>/);
+  assert.match(html, /if \(b\.dataset\.view !== "notes" && location\.hash\.startsWith\("#notes"\)\) history\.replaceState\(null, "", location\.pathname \+ location\.search\);/);
+  assert.match(css, /\.notes-grid\{display:grid/);
+  assert.match(css, /\.note-body table/);
+});

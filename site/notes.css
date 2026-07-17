@@ -1,0 +1,21 @@
+.notes-head{margin:2px 0 18px}
+.notes-head h2{margin:0 0 6px;font-size:24px}
+.notes-head p,.note-meta,.note-reviewed,.notes-status{color:var(--muted)}
+.notes-head p{margin:0;line-height:1.5}.notes-search-label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+#notesSearch{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:inherit}
+#notesSearch:focus{outline:none;border-color:var(--accent)}
+.notes-categories{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.note-category{border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);padding:7px 12px;font:inherit;cursor:pointer}
+.note-category.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.notes-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.note-card{display:flex;flex-direction:column;gap:7px;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:16px;box-shadow:var(--shadow);cursor:pointer;font:inherit}
+.note-card:hover{border-color:var(--accent)}
+.note-card-category,.note-tags{color:var(--accent);font-size:12px;font-weight:700}
+.note-card-title{font-size:17px}.note-card-summary{line-height:1.45}.note-reviewed{font-size:12px}
+.note-detail{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:22px;box-shadow:var(--shadow)}
+.note-detail h2{margin:0 0 5px}.note-back{border:0;background:none;color:var(--accent);padding:0 0 14px;font:inherit;font-weight:700;cursor:pointer}
+.note-body{line-height:1.65}.note-body h2,.note-body h3,.note-body h4{line-height:1.25;margin:1.45em 0 .55em}.note-body h2:first-child{margin-top:0}
+.note-body ul,.note-body ol{padding-left:1.4em}.note-body li+li{margin-top:.35em}.note-body blockquote{border-left:3px solid var(--accent);color:var(--muted);margin:1em 0;padding:.25em 0 .25em 1em}
+.note-body a,.note-sources a{color:var(--accent)}.note-body table{width:100%;border-collapse:collapse;display:block;overflow-x:auto}.note-body th,.note-body td{border:1px solid var(--line);padding:8px;text-align:left}.note-body th{background:color-mix(in srgb,var(--accent) 10%,var(--panel))}
+.note-sources{border-top:1px solid var(--line);margin-top:24px;padding-top:16px}.note-sources h3{margin:0}.note-sources ul{padding-left:1.25em}.note-disclaimer{color:var(--muted);font-size:12px}
+@media(max-width:700px){.notes-grid{grid-template-columns:1fr}.note-detail{padding:16px}}

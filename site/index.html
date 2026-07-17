@@ -1050,6 +1050,7 @@ html.dark .phi{background:#33270f;border-color:#6b5320;color:#f0c988}
 #aiCopy.on{display:inline-block}
 .aiNote{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
 </style>
+<link rel="stylesheet" href="notes.css">
 </head>
 <body>
 
@@ -1068,7 +1069,7 @@ html.dark .phi{background:#33270f;border-color:#6b5320;color:#f0c988}
     <button data-view="search" class="active"><span class="ticon">🔍</span><span>Search</span></button>
     <button data-view="templates"><span class="ticon">📋</span><span>Templates</span></button>
     <button data-view="tqip"><span class="ticon">🧾</span><span>TQIP</span></button>
-    <button data-view="ai"><span class="ticon">✨</span><span>AI Assistant</span></button>
+    <button data-view="notes"><span class="ticon">🗒️</span><span>Notes</span></button>
     <button data-view="settings"><span class="ticon">⚙️</span><span>Settings</span></button>
   </nav>
 </header>
@@ -1374,23 +1375,24 @@ html.dark .phi{background:#33270f;border-color:#6b5320;color:#f0c988}
 
     </div>
 
-    <div class="tview" id="viewAI">
-      <div class="thead">
-        <h2>AI Assistant</h2>
-      </div>
-      <div class="phi"><span>⚠️</span><div><b>No patient identifiers.</b> Never enter names, MRNs, dates of birth, or any other PHI — requests are processed by Google's Gemini API, and free-tier submissions may be used to improve their models. Responses are educational examples: verify every code, dose, and clinical statement before use.</div></div>
-      <div class="aiPresets">
-        <button data-preset="Write an example operative/procedure note for: ">Procedure note example</button>
-        <button data-preset="AIS 2008 coding question: ">AIS coding question</button>
-        <button data-preset="How should I phrase this in my note to get TQIP credit: ">TQIP documentation phrasing</button>
-      </div>
-      <div id="aiForm">
-        <textarea id="aiInput" placeholder="e.g. Write an example procedure note for right chest tube placement for hemothorax"></textarea>
-        <button id="aiSend">Send</button>
-      </div>
-      <div id="aiOut" aria-live="polite"></div>
-      <button id="aiCopy" class="tbtn">Copy response</button>
-      <div class="aiNote">Powered by Gemini Flash through a serverless proxy — the API key never reaches your browser. The assistant is scoped to trauma documentation and AIS 2008 coding. It is not medical advice.</div>
+    <div class="tview" id="viewNotes">
+      <section id="notesApp" aria-labelledby="notesTitle">
+        <div class="notes-head">
+          <div>
+            <h2 id="notesTitle">Trauma Quick Notes</h2>
+            <p>Fast, source-backed references for trauma care. Verify against current guidance and local protocols.</p>
+          </div>
+        </div>
+        <div id="notesLanding">
+          <label class="notes-search-label" for="notesSearch">Search notes</label>
+          <input id="notesSearch" type="search" placeholder="Search TEG, fractures, burns…" autocomplete="off">
+          <div id="notesCategories" class="notes-categories" aria-label="Note categories"></div>
+          <div id="notesCount" class="count" aria-live="polite"></div>
+          <div id="notesStatus" class="notes-status" aria-live="polite"></div>
+          <div id="notesCards" class="notes-grid"></div>
+        </div>
+        <article id="noteDetail" class="note-detail" hidden></article>
+      </section>
     </div>
 
     <div class="tview" id="viewSettings">
@@ -1443,7 +1445,8 @@ const expand = q => q.split(/\s+/).map(t => ABBREV[t] || t).join(" ");
 const esc = s => String(s).replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
 /* ---------- tabs / views ---------- */
-const VIEWS = { search:"viewSearch", templates:"viewTemplates", tqip:"viewTQIP", ai:"viewAI", settings:"viewSettings" };
+const VIEWS = { search:"viewSearch", templates:"viewTemplates", tqip:"viewTQIP", notes:"viewNotes", settings:"viewSettings" };
+window.showView = showView;
 let curView = "search";
 const tabBtns = document.querySelectorAll("#tabs button[data-view]");
 function showView(v){
@@ -1456,7 +1459,10 @@ function showView(v){
   });
   if (v !== "search") closePDF();
 }
-tabBtns.forEach(b => { b.onclick = () => { showView(b.dataset.view); window.scrollTo(0,0); }; });
+tabBtns.forEach(b => { b.onclick = () => {
+  if (b.dataset.view !== "notes" && location.hash.startsWith("#notes")) history.replaceState(null, "", location.pathname + location.search);
+  showView(b.dataset.view); window.scrollTo(0,0);
+}; });
 document.querySelectorAll(".subtabs button").forEach(b => {
   b.onclick = () => {
     document.querySelectorAll(".subtabs button").forEach(x => x.classList.toggle("active", x === b));
@@ -1897,16 +1903,16 @@ async function aiSend(){
   }
   btn.disabled = false;
 }
-el("aiSend").onclick = aiSend;
-el("aiInput").addEventListener("keydown", ev => {
+el("aiSend")?.addEventListener("click", aiSend);
+el("aiInput")?.addEventListener("keydown", ev => {
   if (ev.key === "Enter" && !ev.shiftKey){ ev.preventDefault(); aiSend(); }
 });
-el("aiCopy").onclick = async () => {
+el("aiCopy")?.addEventListener("click", async () => {
   const b = el("aiCopy");
   try { await navigator.clipboard.writeText(el("aiOut").innerText); b.textContent = "Copied ✓"; }
   catch(e){}
   setTimeout(() => b.textContent = "Copy response", 1500);
-};
+});
 
 /* ---------- inline PDF viewer (side panel, never covers content) ---------- */
 pdfjsLib.GlobalWorkerOptions.workerSrc = "assets/pdf.worker.min.js";
@@ -1975,5 +1981,6 @@ if ("serviceWorker" in navigator){
   window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
 }
 </script>
+<script type="module" src="notes.js"></script>
 </body>
 </html>
