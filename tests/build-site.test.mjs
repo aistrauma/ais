@@ -56,3 +56,17 @@ test("builds an empty note index and precaches it", async () => {
   const swMeta = await readFile(path.join(repoRoot, "site/generated/sw-meta.js"), "utf8");
   assert.match(swMeta, /\.\/generated\/notes-index\.json/);
 });
+
+test("changes the build ID when bytes move between similarly named assets", async () => {
+  const firstRepo = await createRepository();
+  const secondRepo = await createRepository();
+  await writeFile(path.join(firstRepo, "site", "a"), "b");
+  await writeFile(path.join(firstRepo, "site", "b"), "");
+  await writeFile(path.join(secondRepo, "site", "a"), "");
+  await writeFile(path.join(secondRepo, "site", "b"), "b");
+
+  const first = await buildSite({ repoRoot: firstRepo });
+  const second = await buildSite({ repoRoot: secondRepo });
+
+  assert.notEqual(first.buildId, second.buildId);
+});

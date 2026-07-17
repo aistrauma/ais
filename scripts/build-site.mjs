@@ -40,7 +40,15 @@ export async function buildSite({ repoRoot }) {
   const indexFile = path.join(generatedDir, "notes-index.json");
   const hashFiles = [...new Set([...staticFiles, ...generatedFragments, indexFile])].sort();
   const digest = createHash("sha256");
-  for (const file of hashFiles) digest.update(path.relative(siteDir, file)).update(await readFile(file));
+  for (const file of hashFiles) {
+    const relativePath = Buffer.from(path.relative(siteDir, file));
+    const contents = await readFile(file);
+    digest
+      .update(`${relativePath.length}:`)
+      .update(relativePath)
+      .update(`${contents.length}:`)
+      .update(contents);
+  }
   const buildId = digest.digest("hex").slice(0, 12);
   const assets = hashFiles.map(file => {
     const relative = path.relative(siteDir, file).split(path.sep).join("/");
