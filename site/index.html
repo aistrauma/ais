@@ -1033,22 +1033,6 @@ html.dark .code-line.hitgrade{background:rgba(56,185,198,.14)}
 .suggest button{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:6px 13px;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;box-shadow:var(--shadow)}
 .suggest button:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ---- AI assistant ---- */
-.phi{display:flex;gap:10px;align-items:flex-start;background:#fff4e5;border:1px solid #f0c988;border-radius:12px;padding:11px 14px;font-size:13px;line-height:1.5;color:#7a4d09;margin-bottom:12px}
-html.dark .phi{background:#33270f;border-color:#6b5320;color:#f0c988}
-.aiPresets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.aiPresets button{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;box-shadow:var(--shadow)}
-.aiPresets button:hover{border-color:var(--accent);color:var(--accent)}
-#aiForm{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px}
-#aiInput{flex:1;min-height:52px;max-height:200px;resize:vertical;padding:12px 14px;border-radius:12px;border:1px solid var(--line);font-family:inherit;font-size:14.5px;background:var(--panel);color:var(--ink);outline:none}
-#aiInput:focus{border-color:var(--accent)}
-#aiSend{padding:13px 20px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit}
-#aiSend:disabled{opacity:.5;cursor:default}
-#aiOut{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;font-size:14px;line-height:1.6;white-space:pre-wrap;display:none;overflow-wrap:break-word}
-#aiOut.on{display:block}
-#aiCopy{display:none;margin-top:12px}
-#aiCopy.on{display:inline-block}
-.aiNote{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
 </style>
 <link rel="stylesheet" href="notes.css">
 <link rel="stylesheet" href="tqip-accordions.css">
@@ -1858,67 +1842,6 @@ nightToggle.addEventListener("click", () => {
 try { if (localStorage.getItem("aisNight") === "1") setNight(true); } catch(e){}
 document.querySelectorAll("#landing .chips button").forEach(b => {
   b.addEventListener("click", () => { el("search").value = b.textContent; render(); });
-});
-
-/* ---------- AI assistant ---------- */
-document.querySelectorAll(".aiPresets button").forEach(b => {
-  b.onclick = () => {
-    const ta = el("aiInput");
-    ta.value = b.dataset.preset;
-    ta.focus();
-    ta.setSelectionRange(ta.value.length, ta.value.length);
-  };
-});
-function aiQuotaOk(){
-  const today = new Date().toISOString().slice(0,10);
-  let rec = {};
-  try { rec = JSON.parse(localStorage.getItem("aiQuota") || "{}"); } catch(e){}
-  if (rec.d !== today) rec = {d: today, n: 0};
-  if (rec.n >= 50) return false;
-  rec.n++;
-  try { localStorage.setItem("aiQuota", JSON.stringify(rec)); } catch(e){}
-  return true;
-}
-async function aiSend(){
-  const q = el("aiInput").value.trim();
-  if (!q) return;
-  const out = el("aiOut"), btn = el("aiSend");
-  el("aiCopy").classList.remove("on");
-  out.classList.add("on");
-  if (!aiQuotaOk()){
-    out.textContent = "Daily limit reached on this device (50 requests) — resets at midnight. This keeps the free AI quota available for everyone.";
-    return;
-  }
-  out.textContent = "Thinking…";
-  btn.disabled = true;
-  try {
-    // The function only exists on Netlify — from other hosts (GitHub Pages), call it cross-origin.
-    const aiEndpoint = (location.hostname.endsWith("netlify.app") || location.hostname === "localhost")
-      ? "/.netlify/functions/assistant"
-      : "https://aistrauma.netlify.app/.netlify/functions/assistant";
-    const r = await fetch(aiEndpoint, {
-      method: "POST",
-      headers: {"content-type": "application/json"},
-      body: JSON.stringify({prompt: q})
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
-    out.textContent = data.text || "(empty response)";
-    el("aiCopy").classList.add("on");
-  } catch(err){
-    out.textContent = "⚠️ " + (navigator.onLine ? err.message : "You're offline — the AI assistant needs a connection. Everything else on this site works offline.");
-  }
-  btn.disabled = false;
-}
-el("aiSend")?.addEventListener("click", aiSend);
-el("aiInput")?.addEventListener("keydown", ev => {
-  if (ev.key === "Enter" && !ev.shiftKey){ ev.preventDefault(); aiSend(); }
-});
-el("aiCopy")?.addEventListener("click", async () => {
-  const b = el("aiCopy");
-  try { await navigator.clipboard.writeText(el("aiOut").innerText); b.textContent = "Copied ✓"; }
-  catch(e){}
-  setTimeout(() => b.textContent = "Copy response", 1500);
 });
 
 /* ---------- inline PDF viewer (side panel, never covers content) ---------- */

@@ -32,9 +32,6 @@ site/generated/
 *.sln
 *.sw?
 
-# Local Netlify folder
-.netlify
-
 # Personal workstation files — not part of the public site
 CLAUDE.md
 MEMORY.md
