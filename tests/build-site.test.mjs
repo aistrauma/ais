@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { buildSite } from "../scripts/build-site.mjs";
+
+const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const VALID_NOTE = `---
 title: Interpreting a TEG
@@ -69,4 +72,27 @@ test("changes the build ID when bytes move between similarly named assets", asyn
   const second = await buildSite({ repoRoot: secondRepo });
 
   assert.notEqual(first.buildId, second.buildId);
+});
+
+test("GitHub Pages deploys only after installing, testing, and building", async () => {
+  const serviceWorker = await readFile(path.join(PROJECT_ROOT, "site/sw.js"), "utf8");
+  assert.match(serviceWorker, /importScripts\("\.\/generated\/sw-meta\.js"\)/);
+  assert.match(serviceWorker, /self\.AIS_BUILD_ID/);
+  assert.match(serviceWorker, /self\.AIS_PRECACHE/);
+  assert.doesNotMatch(serviceWorker, /netlify/i);
+
+  const workflow = await readFile(path.join(PROJECT_ROOT, ".github/workflows/pages.yml"), "utf8");
+  assert.match(workflow, /npm ci[\s\S]*npm test[\s\S]*npm run build[\s\S]*actions\/upload-pages-artifact/);
+});
+
+test("generates identical output for identical builds", async () => {
+  const repoRoot = await createRepository({ note: VALID_NOTE });
+
+  await buildSite({ repoRoot });
+  const firstIndex = await readFile(path.join(repoRoot, "site/generated/notes-index.json"));
+  const firstMeta = await readFile(path.join(repoRoot, "site/generated/sw-meta.js"));
+
+  await buildSite({ repoRoot });
+  assert.deepEqual(await readFile(path.join(repoRoot, "site/generated/notes-index.json")), firstIndex);
+  assert.deepEqual(await readFile(path.join(repoRoot, "site/generated/sw-meta.js")), firstMeta);
 });

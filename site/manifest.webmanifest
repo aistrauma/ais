@@ -1,7 +1,7 @@
 {
   "name": "AIS 2008 Trauma Reference",
   "short_name": "AIS Ref",
-  "description": "AIS 2008 trauma coding reference with searchable codes, severity grades, templates, and TQIP documentation rules.",
+  "description": "AIS 2008 trauma coding reference with searchable codes, source-backed quick notes, severity grades, templates, and TQIP documentation rules.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

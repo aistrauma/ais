@@ -1,15 +1,9 @@
 /* AIS Trauma Reference service worker — precache the whole app (including the
    dictionary PDF) so it installs to a home screen and works fully offline. */
-const CACHE = "ais-ref-2026-07-11-2";
-const PRECACHE = [
-  "./",
-  "manifest.webmanifest",
-  "assets/pdf.min.js",
-  "assets/pdf.worker.min.js",
-  "assets/AIS08-Dictionary-redacted.pdf",
-  "icons/icon-192.png",
-  "icons/icon-512.png"
-];
+/* Generated metadata supplies a content-derived cache ID and complete asset list. */
+importScripts("./generated/sw-meta.js");
+const CACHE = `ais-ref-${self.AIS_BUILD_ID}`;
+const PRECACHE = self.AIS_PRECACHE;
 
 self.addEventListener("install", e => {
   e.waitUntil(
