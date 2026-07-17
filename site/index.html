@@ -1051,6 +1051,7 @@ html.dark .phi{background:#33270f;border-color:#6b5320;color:#f0c988}
 .aiNote{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
 </style>
 <link rel="stylesheet" href="notes.css">
+<link rel="stylesheet" href="tqip-accordions.css">
 </head>
 <body>
 
@@ -1135,7 +1136,13 @@ html.dark .phi{background:#33270f;border-color:#6b5320;color:#f0c988}
       </div>
       <div class="tnote">PECs, RAVs, PMEs, and more (June 23, 2026). Tap a section to expand. Legend: <span class="no">!</span> = writing the exact PEC name alone gets <b>no credit</b> (extra detail required) · <span class="ok">*</span> = must list the medication.</div>
 
-      <details class="card" open>
+      <div class="tqip-controls" aria-label="TQIP section controls">
+        <button id="tqipExpandAll" class="tbtn">Expand all</button>
+        <button id="tqipCollapseAll" class="tbtn">Collapse all</button>
+        <span id="tqipState" class="tqip-state" aria-live="polite"></span>
+      </div>
+
+      <details class="card">
         <summary>PEC quick stats</summary>
         <ul>
           <li><b>PEC31</b> — 31 total PECs; goal is number above national average.</li>
@@ -1982,5 +1989,6 @@ if ("serviceWorker" in navigator){
 }
 </script>
 <script type="module" src="notes.js"></script>
+<script type="module" src="tqip-accordions.js"></script>
 </body>
 </html>
