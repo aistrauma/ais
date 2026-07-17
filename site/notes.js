@@ -39,6 +39,8 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   let notes = [];
   let category = "All";
   let savedListState = { query: "", category: "All", scrollY: 0 };
+  let loadState = "idle";
+  let routeToken = 0;
 
   const make = (tag, className, text) => {
     const node = document.createElement(tag);
@@ -65,6 +67,16 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   const openNote = slug => {
     savedListState = { query: search.value, category, scrollY: window.scrollY };
     location.hash = `notes/${slug}`;
+  };
+
+  const renderLoadFailure = () => {
+    landing.hidden = false;
+    detail.hidden = true;
+    status.textContent = "The notes library could not load.";
+    const retry = make("button", "tbtn", "Retry");
+    retry.id = "notesRetry";
+    retry.addEventListener("click", load, { once: true });
+    status.append(" ", retry);
   };
 
   const renderList = () => {
@@ -102,7 +114,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
     detail.replaceChildren(back, make("h2", "", "Note not found"), make("p", "", "This note may have moved or been removed."));
   };
 
-  const showNote = async slug => {
+  const showNote = async (slug, token) => {
     const note = notes.find(item => item.slug === slug);
     if (!note) return showNotFound();
     landing.hidden = true;
@@ -112,6 +124,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       const response = await fetchImpl(note.fragment);
       if (!response.ok) throw new Error(`Note request failed (${response.status})`);
       const bodyHtml = await response.text();
+      if (token !== routeToken || location.hash !== `#notes/${slug}`) return;
       const back = make("button", "note-back", "← Back to Notes");
       back.addEventListener("click", backToNotes);
       const heading = make("h2", "", note.title);
@@ -134,6 +147,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       const disclaimer = make("p", "note-disclaimer", "Educational quick reference only. Verify against current guidance and local protocols.");
       detail.replaceChildren(back, heading, meta, body, sources, disclaimer);
     } catch {
+      if (token !== routeToken || location.hash !== `#notes/${slug}`) return;
       const back = make("button", "note-back", "← Back to Notes");
       back.addEventListener("click", backToNotes);
       detail.replaceChildren(back, make("h2", "", note.title), make("p", "notes-status", "This note could not load. Check your connection and try again."));
@@ -143,6 +157,9 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   const route = async () => {
     if (!location.hash.startsWith("#notes")) return;
     window.showView?.("notes");
+    if (loadState === "failed") return renderLoadFailure();
+    if (loadState !== "ready") return;
+    const token = ++routeToken;
     if (location.hash.startsWith("#notes/")) {
       let slug;
       try {
@@ -150,7 +167,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       } catch {
         return showNotFound();
       }
-      if (slug) return showNote(slug);
+      if (slug) return showNote(slug, token);
     }
     search.value = savedListState.query;
     category = savedListState.category;
@@ -159,6 +176,8 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   };
 
   const load = async () => {
+    loadState = "loading";
+    if (location.hash.startsWith("#notes")) window.showView?.("notes");
     status.textContent = "Loading notes…";
     try {
       const response = await fetchImpl(indexUrl);
@@ -166,14 +185,12 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       const payload = await response.json();
       if (payload.version !== 1 || !Array.isArray(payload.notes)) throw new Error("Unsupported notes index");
       notes = payload.notes;
+      loadState = "ready";
       await route();
       if (!location.hash.startsWith("#notes")) renderList();
     } catch {
-      status.textContent = "The notes library could not load.";
-      const retry = make("button", "tbtn", "Retry");
-      retry.id = "notesRetry";
-      retry.addEventListener("click", load, { once: true });
-      status.append(" ", retry);
+      loadState = "failed";
+      renderLoadFailure();
     }
   };
 

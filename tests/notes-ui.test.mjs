@@ -31,6 +31,10 @@ const response = (payload, { ok = true, status = 200 } = {}) => ({
 });
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+const deferred = () => {
+  let resolve;
+  return { promise: new Promise(done => { resolve = done; }), resolve };
+};
 
 function installDom(hash = "") {
   const dom = new JSDOM(`<!doctype html><body>
@@ -90,6 +94,31 @@ test("renders load failure and retry control", async t => {
   app.destroy();
 });
 
+test("shows a direct Notes hash when the index cannot load", async t => {
+  const dom = installDom("#notes/teg");
+  t.after(() => cleanupDom(dom));
+  let shownView = "";
+  window.showView = view => { shownView = view; };
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => { throw new Error("offline"); } });
+  await app.load();
+  assert.equal(shownView, "notes");
+  assert.match(document.querySelector("#notesStatus").textContent, /could not load/i);
+  assert.ok(document.querySelector("#notesRetry"));
+  app.destroy();
+});
+
+test("preserves the index failure and retry control after Notes routing", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({ root: document.querySelector("#notesApp"), fetchImpl: async () => { throw new Error("offline"); } });
+  await app.load();
+  history.replaceState(null, "", "#notes");
+  await app.route();
+  assert.match(document.querySelector("#notesStatus").textContent, /could not load/i);
+  assert.ok(document.querySelector("#notesRetry"));
+  app.destroy();
+});
+
 test("loads a direct note hash and its sanitized fragment", async t => {
   const dom = installDom("#notes/teg");
   t.after(() => cleanupDom(dom));
@@ -143,6 +172,36 @@ test("Back to Notes restores the previous query and category", async t => {
   assert.equal(search.value, "resuscitation");
   assert.equal(document.querySelector(".note-category.active").textContent, "Burns");
   assert.equal(document.querySelectorAll(".note-card").length, 1);
+  app.destroy();
+});
+
+test("does not let a stale note fragment overwrite the current note", async t => {
+  const dom = installDom();
+  t.after(() => cleanupDom(dom));
+  const first = deferred();
+  const second = deferred();
+  const firstNote = note({ slug: "first", title: "First note", fragment: "generated/notes/first.html" });
+  const secondNote = note({ slug: "second", title: "Second note", fragment: "generated/notes/second.html" });
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => {
+      if (url === "generated/notes-index.json") return response({ version: 1, notes: [firstNote, secondNote] });
+      if (url === firstNote.fragment) return first.promise;
+      return second.promise;
+    }
+  });
+  await app.load();
+  history.replaceState(null, "", "#notes/first");
+  const firstRoute = app.route();
+  history.replaceState(null, "", "#notes/second");
+  const secondRoute = app.route();
+  second.resolve(response("<p>Second body</p>"));
+  await secondRoute;
+  first.resolve(response("<p>First body</p>"));
+  await firstRoute;
+  assert.match(document.querySelector("#noteDetail").textContent, /Second body/);
+  assert.doesNotMatch(document.querySelector("#noteDetail").textContent, /First body/);
+  assert.equal(location.hash, "#notes/second");
   app.destroy();
 });
 
