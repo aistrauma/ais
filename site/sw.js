@@ -25,10 +25,10 @@ self.addEventListener("activate", e => {
   );
 });
 
-/* Cache-first with background refresh. The AI endpoint is network-only. */
+/* Cache-first with background refresh for same-origin GET requests. */
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
-  if (e.request.method !== "GET" || url.pathname.includes("/.netlify/")) return;
+  if (e.request.method !== "GET") return;
   if (url.origin !== location.origin) return;
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit => {

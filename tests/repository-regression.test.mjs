@@ -1,15 +1,30 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readdir, readFile } from "node:fs/promises";
+
+const DEPLOYED_TEXT_EXTENSIONS = new Set([".html", ".js", ".css", ".json", ".webmanifest"]);
+const FORBIDDEN_DEPLOYED_TOKENS = ["AI Assistant", "Gemini", "GOOGLE_AI_KEY", ".netlify", "viewAI", "aiSend", "aiQuota"];
 
 async function missing(path) {
   try { await access(path); return false; } catch { return true; }
 }
 
+async function deployedTextAssets(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const nested = await Promise.all(entries.map(async entry => {
+    const path = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) return deployedTextAssets(path);
+    return DEPLOYED_TEXT_EXTENSIONS.has(`.${entry.name.split(".").pop()}`) ? [path] : [];
+  }));
+  return nested.flat();
+}
+
 test("deployed app contains no AI assistant or Netlify runtime", async () => {
-  const html = await readFile("site/index.html", "utf8");
-  for (const forbidden of ["viewAI", "aiSend", "aiQuota", "Gemini", ".netlify/functions/assistant", "GOOGLE_AI_KEY"]) {
-    assert.doesNotMatch(html, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+  for (const path of await deployedTextAssets("site")) {
+    const contents = await readFile(path, "utf8");
+    for (const forbidden of FORBIDDEN_DEPLOYED_TOKENS) {
+      assert.doesNotMatch(contents, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `${path} must not contain ${forbidden}`);
+    }
   }
   assert.equal(await missing("netlify/functions/assistant.mjs"), true);
   assert.equal(await missing("netlify.toml"), true);
