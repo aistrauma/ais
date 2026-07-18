@@ -30,6 +30,11 @@ test("deployed app contains no AI assistant or Netlify runtime", async () => {
   assert.equal(await missing("netlify.toml"), true);
 });
 
+test("keeps legacy Netlify local state out of version control", async () => {
+  const gitignore = await readFile(".gitignore", "utf8");
+  assert.match(gitignore, /^\.netlify\/$/m);
+});
+
 test("core views and AIS data remain present", async () => {
   const html = await readFile("site/index.html", "utf8");
   for (const required of ["viewSearch", "viewTemplates", "viewTQIP", "viewNotes", "viewSettings", "const FULLDICT", "AIS08-Dictionary-redacted.pdf"]) {

@@ -39,3 +39,6 @@ AIS Trauma Reference Resources/
 site/.impeccable/
 .claude/
 .impeccable/
+
+# Legacy local Netlify state (the site no longer deploys through Netlify)
+.netlify/

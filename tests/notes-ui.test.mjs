@@ -165,6 +165,78 @@ test("loads a direct note hash and its sanitized fragment", async t => {
   app.destroy();
 });
 
+test("shows tags in the full note view", async t => {
+  const dom = installDom("#notes/teg");
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => url === "generated/notes-index.json"
+      ? response({ version: 1, notes: [FIXTURES[0]] })
+      : response("<p>Sanitized content.</p>")
+  });
+
+  await app.load();
+
+  assert.equal(document.querySelector("#noteDetail .note-tags").textContent, "TEG · coagulopathy");
+  app.destroy();
+});
+
+test("retries a failed note fragment and renders the successful retry", async t => {
+  const dom = installDom("#notes/teg");
+  t.after(() => cleanupDom(dom));
+  let fragmentAttempts = 0;
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => {
+      if (url === "generated/notes-index.json") return response({ version: 1, notes: [FIXTURES[0]] });
+      fragmentAttempts += 1;
+      if (fragmentAttempts === 1) throw new Error("offline");
+      return response("<p>Recovered content</p>");
+    }
+  });
+
+  await app.load();
+  assert.ok(document.querySelector("#noteRetry"));
+  document.querySelector("#noteRetry").click();
+  await tick();
+
+  assert.equal(fragmentAttempts, 2);
+  assert.match(document.querySelector("#noteDetail").textContent, /Recovered content/);
+  app.destroy();
+});
+
+test("does not let a stale note retry overwrite the active note", async t => {
+  const dom = installDom("#notes/first");
+  t.after(() => cleanupDom(dom));
+  const retry = deferred();
+  let firstAttempts = 0;
+  const firstNote = note({ slug: "first", title: "First note", fragment: "generated/notes/first.html" });
+  const secondNote = note({ slug: "second", title: "Second note", fragment: "generated/notes/second.html" });
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => {
+      if (url === "generated/notes-index.json") return response({ version: 1, notes: [firstNote, secondNote] });
+      if (url === firstNote.fragment) {
+        firstAttempts += 1;
+        if (firstAttempts === 1) throw new Error("offline");
+        return retry.promise;
+      }
+      return response("<p>Second body</p>");
+    }
+  });
+
+  await app.load();
+  document.querySelector("#noteRetry").click();
+  history.replaceState(null, "", "#notes/second");
+  await app.route();
+  retry.resolve(response("<p>First retry body</p>"));
+  await tick();
+
+  assert.match(document.querySelector("#noteDetail").textContent, /Second body/);
+  assert.doesNotMatch(document.querySelector("#noteDetail").textContent, /First retry body/);
+  app.destroy();
+});
+
 test("renders note not found for unknown and malformed note hashes", async t => {
   const dom = installDom("#notes/missing");
   t.after(() => cleanupDom(dom));

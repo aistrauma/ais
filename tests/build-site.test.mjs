@@ -74,7 +74,7 @@ test("changes the build ID when bytes move between similarly named assets", asyn
   assert.notEqual(first.buildId, second.buildId);
 });
 
-test("GitHub Pages deploys only after installing, testing, and building", async () => {
+test("GitHub Pages validates pull requests and deploys only after main or manual validation", async () => {
   const serviceWorker = await readFile(path.join(PROJECT_ROOT, "site/sw.js"), "utf8");
   assert.match(serviceWorker, /importScripts\("\.\/generated\/sw-meta\.js"\)/);
   assert.match(serviceWorker, /self\.AIS_BUILD_ID/);
@@ -82,7 +82,14 @@ test("GitHub Pages deploys only after installing, testing, and building", async 
   assert.doesNotMatch(serviceWorker, /netlify/i);
 
   const workflow = await readFile(path.join(PROJECT_ROOT, ".github/workflows/pages.yml"), "utf8");
-  assert.match(workflow, /npm ci[\s\S]*npm test[\s\S]*npm run build[\s\S]*actions\/upload-pages-artifact/);
+  assert.match(workflow, /pull_request:/);
+  const validate = workflow.slice(workflow.indexOf("  validate:"), workflow.indexOf("  deploy:"));
+  const deploy = workflow.slice(workflow.indexOf("  deploy:"));
+  assert.match(validate, /npm ci[\s\S]*npm test[\s\S]*npm run build/);
+  assert.doesNotMatch(validate, /actions\/deploy-pages/);
+  assert.match(deploy, /needs: validate/);
+  assert.match(deploy, /if: github\.ref == 'refs\/heads\/main' && \(github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'\)/);
+  assert.match(deploy, /actions\/deploy-pages@v4/);
 });
 
 test("generates identical output for identical builds", async () => {

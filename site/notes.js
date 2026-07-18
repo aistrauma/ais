@@ -129,6 +129,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       back.addEventListener("click", backToNotes);
       const heading = make("h2", "", note.title);
       const meta = make("div", "note-meta", `${note.category} · Reviewed ${note.lastReviewed}`);
+      const tags = make("p", "note-tags", note.tags.join(" · "));
       const body = make("div", "note-body");
       body.innerHTML = bodyHtml;
       const sources = make("section", "note-sources");
@@ -145,12 +146,19 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       }
       sources.append(list);
       const disclaimer = make("p", "note-disclaimer", "Educational quick reference only. Verify against current guidance and local protocols.");
-      detail.replaceChildren(back, heading, meta, body, sources, disclaimer);
+      detail.replaceChildren(back, heading, meta, tags, body, sources, disclaimer);
     } catch {
       if (token !== routeToken || location.hash !== `#notes/${slug}`) return;
       const back = make("button", "note-back", "← Back to Notes");
       back.addEventListener("click", backToNotes);
-      detail.replaceChildren(back, make("h2", "", note.title), make("p", "notes-status", "This note could not load. Check your connection and try again."));
+      const retry = make("button", "tbtn", "Retry");
+      retry.id = "noteRetry";
+      retry.type = "button";
+      retry.addEventListener("click", () => {
+        if (location.hash !== `#notes/${slug}`) return;
+        void showNote(slug, ++routeToken);
+      });
+      detail.replaceChildren(back, make("h2", "", note.title), make("p", "notes-status", "This note could not load. Check your connection and try again."), retry);
     }
   };
 
