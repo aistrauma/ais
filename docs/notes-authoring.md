@@ -65,7 +65,7 @@ npm run check
 
 The build creates `site/generated/` and updates the service-worker metadata. Those generated files are not hand-edited source files.
 
-Preview the built site from the `site/` directory:
+From the repository root, preview the built site with:
 
 ```bash
 python3 -m http.server 8742 --directory site
