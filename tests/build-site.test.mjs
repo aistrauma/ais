@@ -83,11 +83,13 @@ test("GitHub Pages validates pull requests and deploys only after main or manual
 
   const workflow = await readFile(path.join(PROJECT_ROOT, ".github/workflows/pages.yml"), "utf8");
   assert.match(workflow, /pull_request:/);
+  assert.doesNotMatch(workflow, /^concurrency:\n  group: pages/m);
   const validate = workflow.slice(workflow.indexOf("  validate:"), workflow.indexOf("  deploy:"));
   const deploy = workflow.slice(workflow.indexOf("  deploy:"));
   assert.match(validate, /npm ci[\s\S]*npm test[\s\S]*npm run build/);
   assert.doesNotMatch(validate, /actions\/deploy-pages/);
   assert.match(deploy, /needs: validate/);
+  assert.match(deploy, /concurrency:\n      group: pages\n      cancel-in-progress: true/);
   assert.match(deploy, /if: github\.ref == 'refs\/heads\/main' && \(github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'\)/);
   assert.match(deploy, /actions\/deploy-pages@v4/);
 });
