@@ -42,6 +42,11 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   let loadState = "idle";
   let routeToken = 0;
 
+  const setDetailOpen = open => {
+    root.classList.toggle("notes-detail-open", open);
+    root.closest("#content")?.classList.toggle("notes-reading", open);
+  };
+
   const make = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -80,6 +85,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   };
 
   const renderList = () => {
+    setDetailOpen(false);
     landing.hidden = false;
     detail.hidden = true;
     const visible = filterNotes(notes, { query: search.value, category });
@@ -107,7 +113,8 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   };
 
   const showNotFound = () => {
-    landing.hidden = true;
+    setDetailOpen(true);
+    landing.hidden = false;
     detail.hidden = false;
     const back = make("button", "note-back", "Back to Notes");
     back.addEventListener("click", backToNotes);
@@ -117,9 +124,11 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   const showNote = async (slug, token) => {
     const note = notes.find(item => item.slug === slug);
     if (!note) return showNotFound();
-    landing.hidden = true;
+    setDetailOpen(true);
+    landing.hidden = false;
     detail.hidden = false;
     detail.replaceChildren(make("p", "notes-status", "Loading note…"));
+    window.closeInlinePDF?.();
     try {
       const response = await fetchImpl(note.fragment);
       if (!response.ok) throw new Error(`Note request failed (${response.status})`);
@@ -146,7 +155,14 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       }
       sources.append(list);
       const disclaimer = make("p", "note-disclaimer", "Educational quick reference only. Verify against current guidance and local protocols.");
-      detail.replaceChildren(back, heading, meta, tags, body, sources, disclaimer);
+      if (note.slug === "initial-immobilization-guide") {
+        const guide = make("section", "imm-feature");
+        guide.id = "immobilizationGuide";
+        guide.setAttribute("aria-label", "Initial Immobilization Guide");
+        detail.replaceChildren(back, heading, meta, tags, guide);
+        const { createImmobilizationGuide } = await import("./immobilization-guide.js");
+        if (token === routeToken && location.hash === `#notes/${slug}`) void createImmobilizationGuide({ root: guide }).load();
+      } else detail.replaceChildren(back, heading, meta, tags, body, sources, disclaimer);
     } catch {
       if (token !== routeToken || location.hash !== `#notes/${slug}`) return;
       const back = make("button", "note-back", "← Back to Notes");
@@ -213,6 +229,10 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
   search.addEventListener("input", onInput);
   window.addEventListener("hashchange", onHashChange);
   notesTab?.addEventListener("click", onNotesTabClick);
+  window.closeNotesReader = () => {
+    if (location.hash.startsWith("#notes/")) history.replaceState(null, "", location.pathname + location.search);
+    setDetailOpen(false);
+  };
 
   return {
     load,
@@ -221,6 +241,7 @@ export function createNotesApp({ root, fetchImpl = fetch, indexUrl = "generated/
       search.removeEventListener("input", onInput);
       window.removeEventListener("hashchange", onHashChange);
       notesTab?.removeEventListener("click", onNotesTabClick);
+      if (window.closeNotesReader) delete window.closeNotesReader;
     }
   };
 }

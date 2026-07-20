@@ -38,10 +38,10 @@ const deferred = () => {
 
 function installDom(hash = "") {
   const dom = new JSDOM(`<!doctype html><body>
-    <div id="viewNotes"><button data-view="notes">Notes</button><section id="notesApp">
-      <div id="notesLanding"><input id="notesSearch"><div id="notesCategories"></div><div id="notesCount"></div><div id="notesStatus"></div><div id="notesCards"></div></div>
+    <div id="content"><div id="viewNotes"><button data-view="notes">Notes</button><section id="notesApp">
+      <div id="notesBrowser"><div class="notes-head"><h2 id="notesTitle">Notes</h2></div><div id="notesLanding"><input id="notesSearch"><div id="notesCategories"></div><div id="notesCount"></div><div id="notesStatus"></div><div id="notesCards"></div></div></div>
       <article id="noteDetail" hidden></article>
-    </section></div>
+    </section></div></div>
   </body>`, { url: `https://example.test/${hash}` });
   globalThis.window = dom.window;
   globalThis.document = dom.window.document;
@@ -161,7 +161,9 @@ test("loads a direct note hash and its sanitized fragment", async t => {
   await app.load();
   assert.equal(shownView, "notes");
   assert.match(document.querySelector("#noteDetail").textContent, /Thresholds/);
-  assert.equal(document.querySelector("#notesLanding").hidden, true);
+  assert.equal(document.querySelector("#notesLanding").hidden, false);
+  assert.equal(document.querySelector("#notesApp").classList.contains("notes-detail-open"), true);
+  assert.equal(document.querySelector("#content").classList.contains("notes-reading"), true);
   app.destroy();
 });
 
@@ -335,9 +337,8 @@ test("loads the Notes tab assets and routes the shell to the Notes view", async 
   assert.match(html, /<link rel="stylesheet" href="immobilization-guide\.css">/);
   assert.match(html, /<button data-view="notes"><span class="ticon">🗒️<\/span><span>Notes<\/span><\/button>/);
   assert.match(html, /<div class="tview" id="viewNotes">/);
-  assert.match(html, /<h3 id="immobilizationTitle" class="imm-feature-title">Initial Immobilization Guide<\/h3>/);
-  assert.match(html, /<section id="immobilizationGuide" class="imm-feature" aria-labelledby="immobilizationTitle">/);
-  assert.ok(html.indexOf('<section id="immobilizationGuide"') < html.indexOf('<input id="notesSearch"'));
+  assert.match(html, /<div id="notesBrowser">/);
+  assert.ok(html.indexOf('<input id="notesSearch"') < html.indexOf('<div id="notesCards"'));
   assert.match(html, /const VIEWS = \{ search:"viewSearch", templates:"viewTemplates", tqip:"viewTQIP", notes:"viewNotes", settings:"viewSettings" \};\s*window\.showView = showView;/);
   assert.match(html, /<script type="module" src="immobilization-guide\.js"><\/script>/);
   assert.match(html, /<script type="module" src="notes\.js"><\/script>/);
@@ -345,16 +346,36 @@ test("loads the Notes tab assets and routes the shell to the Notes view", async 
   assert.match(html, /if \(b\.dataset\.view !== "notes" && location\.hash\.startsWith\("#notes"\)\) history\.replaceState\(null, "", location\.pathname \+ location\.search\);/);
   assert.match(css, /\.notes-grid\{display:grid/);
   assert.match(css, /\.note-body table/);
+  assert.match(css, /\.notes-detail-open\{display:grid;grid-template-columns:minmax\(300px,400px\) minmax\(0,1fr\)/);
+  assert.match(css, /\.notes-detail-open #notesBrowser\{grid-column:1;min-width:0\}/);
   assert.match(guideCss, /\.imm-feature\{[^}]*display:grid/);
   assert.match(guideCss, /\.imm-guide-sections/);
   assert.match(guideCss, /\.imm-guide-entries/);
   assert.match(guideCss, /\.imm-guide-quick/);
   assert.match(guideCss, /:focus-visible\{outline:3px solid var\(--accent\)/);
-  assert.match(guideCss, /\.imm-feature\{--immobilization-warning:#[0-9a-f]+;--immobilization-padding:#315c73;/);
-  assert.match(guideCss, /html\.dark \.imm-feature\{--immobilization-warning:#[0-9a-f]+;--immobilization-padding:#a8d7ec;/);
-  assert.match(guideCss, /\.imm-diagram-padding\{[^}]*stroke:var\(--immobilization-padding\)/);
+  assert.doesNotMatch(guideCss, /imm-diagram/);
   for (const [, transition] of guideCss.matchAll(/transition:([^;}]+)/g)) {
     assert.doesNotMatch(transition, /background-color|border-color|(?:^|,)color(?: |$)/);
   }
-  assert.match(guideCss, /@media\(max-width:767px\)/);
+  assert.match(guideCss, /@media\(max-width:899px\)/);
+  assert.match(html, /#content\.notes-reading\{max-width:1400px;margin:0\}/);
+  assert.match(html, /window\.openInlinePDF = function\(printedPage, label\)\{\s*window\.closeNotesReader\?\.\(\);/);
+  assert.match(html, /if \(v !== "notes"\) window\.closeNotesReader\?\.\(\);/);
+});
+
+test("clears the reader state when the PDF direction closes Notes", async t => {
+  const dom = installDom("#notes/teg");
+  t.after(() => cleanupDom(dom));
+  const app = createNotesApp({
+    root: document.querySelector("#notesApp"),
+    fetchImpl: async url => url === "generated/notes-index.json"
+      ? response({ version: 1, notes: [FIXTURES[0]] })
+      : response("<p>Reader body</p>")
+  });
+  await app.load();
+  window.closeNotesReader();
+  assert.equal(document.querySelector("#notesApp").classList.contains("notes-detail-open"), false);
+  assert.equal(document.querySelector("#content").classList.contains("notes-reading"), false);
+  assert.equal(location.hash, "");
+  app.destroy();
 });

@@ -1,11 +1,4 @@
-export const DIAGRAM_IDS = new Set([
-  "sling", "sling-swathe", "coaptation", "posterior-long-arm",
-  "sugar-tong", "volar-wrist", "position-of-function",
-  "knee-immobilizer", "long-leg-posterior", "traction-splint",
-  "buck-traction", "skeletal-traction", "position-of-comfort"
-]);
-
-const TEXT_FIELDS = ["id", "section", "label", "device", "warning", "diagram", "headingId", "diagramAlt"];
+const TEXT_FIELDS = ["id", "section", "label", "device", "warning", "headingId"];
 
 export function compileImmobilizationGuide({ note, entries }) {
   const errors = [];
@@ -18,7 +11,6 @@ export function compileImmobilizationGuide({ note, entries }) {
     if (owners.has(entry.id)) errors.push(`duplicate guide id "${entry.id}"`);
     owners.add(entry.id);
     if (!headings.has(entry.headingId)) errors.push(`entries[${index}].headingId does not match a note section`);
-    if (!DIAGRAM_IDS.has(entry.diagram)) errors.push(`entries[${index}].diagram is unknown`);
     if (!Array.isArray(entry.bullets) || entry.bullets.length < 3 || entry.bullets.length > 5 || entry.bullets.some(item => typeof item !== "string" || !item.trim())) {
       errors.push(`entries[${index}].bullets must contain 3-5 strings`);
     }

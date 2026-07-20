@@ -10,10 +10,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Evaluate for associated chest injury and displacement."
     ],
     warning: "Seek urgent orthopedic evaluation for open injury, threatened skin, neurovascular compromise, significant chest injury, or severe displacement in an appropriate operative candidate.",
-    diagram: "sling",
     headingId: "clavicle-fracture",
     searchTerms: ["clavicle", "collarbone", "sling"],
-    diagramAlt: "An arm supported in a sling with the elbow flexed and the forearm resting across the torso."
   },
   {
     id: "scapula-fracture",
@@ -26,10 +24,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Evaluate the chest and other areas for associated injury."
     ],
     warning: "Obtain orthopedic guidance when the fracture pattern or an associated injury requires it.",
-    diagram: "sling",
     headingId: "scapula-fracture",
     searchTerms: ["scapula", "shoulder blade", "sling"],
-    diagramAlt: "An arm supported in a sling with the elbow flexed and the forearm resting across the torso."
   },
   {
     id: "shoulder-dislocation",
@@ -43,10 +39,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Immobilize in a sling, adding a swathe when clinically appropriate."
     ],
     warning: "Do not assume an apparent dislocation is isolated before attempting forceful reduction.",
-    diagram: "sling-swathe",
     headingId: "shoulder-dislocation",
     searchTerms: ["shoulder", "dislocation", "axillary nerve", "sling", "swathe"],
-    diagramAlt: "The injured arm is supported in a sling and secured against the torso by a broad swathe."
   },
   {
     id: "proximal-humerus-fracture",
@@ -59,10 +53,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Avoid routine manipulation of the fracture."
     ],
     warning: "Obtain urgent orthopedic consultation for significant displacement or a fracture-dislocation.",
-    diagram: "sling-swathe",
     headingId: "proximal-humerus-fracture",
     searchTerms: ["proximal humerus", "shoulder fracture", "sling", "swathe"],
-    diagramAlt: "The injured arm is supported in a sling and may be secured against the torso by a broad swathe."
   },
   {
     id: "humeral-shaft-fracture",
@@ -76,10 +68,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Allow gravity to assist alignment when the splint is correct and the patient tolerates the position."
     ],
     warning: "Excessive sling support beneath the elbow can remove the intended gravity-assisted alignment.",
-    diagram: "coaptation",
     headingId: "humeral-shaft-fracture",
     searchTerms: ["humerus", "shaft", "coaptation", "radial nerve"],
-    diagramAlt: "A padded U-shaped coaptation splint extends along both sides of the upper arm and around the elbow."
   },
   {
     id: "distal-humerus-fracture",
@@ -92,10 +82,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Recheck and document distal neurovascular status after immobilization."
     ],
     warning: "Do not force elbow flexion if it worsens perfusion, pain, or skin tension.",
-    diagram: "posterior-long-arm",
     headingId: "distal-humerus-fracture",
     searchTerms: ["distal humerus", "supracondylar", "elbow", "posterior splint"],
-    diagramAlt: "A padded posterior splint follows the back of the upper arm around the flexed elbow and along the forearm."
   },
   {
     id: "olecranon-fracture",
@@ -108,10 +96,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Inspect the skin over the olecranon and document distal neurovascular status."
     ],
     warning: "Threatened skin over the subcutaneous olecranon requires urgent treatment.",
-    diagram: "posterior-long-arm",
     headingId: "olecranon-fracture",
     searchTerms: ["olecranon", "elbow fracture", "posterior splint"],
-    diagramAlt: "A well-padded posterior long-arm splint supports the elbow and forearm without pressure on the olecranon."
   },
   {
     id: "radial-head-fracture",
@@ -124,10 +110,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Evaluate for mechanical block, instability, interosseous-membrane injury, and wrist pain."
     ],
     warning: "Avoid prolonged routine immobilization unless instability, pain, or associated injury requires it.",
-    diagram: "sling",
     headingId: "radial-head-fracture",
     searchTerms: ["radial head", "elbow", "sling", "mechanical block"],
-    diagramAlt: "An arm supported in a sling with the elbow flexed and the forearm resting across the torso."
   },
   {
     id: "elbow-dislocation",
@@ -141,10 +125,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Tailor flexion to instability direction, fractures, swelling, and vascular findings."
     ],
     warning: "A fixed 90-degree position is not appropriate if it compromises perfusion or stability.",
-    diagram: "posterior-long-arm",
     headingId: "elbow-dislocation",
     searchTerms: ["elbow", "dislocation", "reduction", "posterior splint"],
-    diagramAlt: "A padded posterior long-arm splint supports the reduced elbow in a clinically selected flexion angle."
   },
   {
     id: "terrible-triad-of-the-elbow",
@@ -157,10 +139,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Confirm alignment with post-reduction imaging."
     ],
     warning: "Obtain urgent orthopedic consultation because this fracture-dislocation is frequently unstable and commonly requires operative management.",
-    diagram: "posterior-long-arm",
     headingId: "terrible-triad-of-the-elbow",
     searchTerms: ["terrible triad", "elbow", "radial head", "coronoid", "dislocation"],
-    diagramAlt: "A padded posterior long-arm splint supports the reduced elbow in its position of greatest stability."
   },
   {
     id: "forearm-fracture",
@@ -173,10 +153,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Keep the forearm neutral and wrist near neutral or slightly extended unless the injury requires otherwise."
     ],
     warning: "Adult both-bone fractures, Galeazzi or Monteggia injuries, open fractures, and neurovascular compromise require urgent orthopedic evaluation.",
-    diagram: "sugar-tong",
     headingId: "forearm-fracture",
     searchTerms: ["forearm", "radius", "ulna", "Galeazzi", "Monteggia", "sugar tong"],
-    diagramAlt: "A padded sugar-tong splint runs from one side of the MCP joints around the flexed elbow to the other side."
   },
   {
     id: "distal-radius-fracture",
@@ -189,10 +167,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "For a stable nondisplaced fracture, a volar wrist or short-arm splint may be appropriate."
     ],
     warning: "Recheck and document distal pulses, capillary refill, motor function, and sensation after application.",
-    diagram: "sugar-tong",
     headingId: "distal-radius-fracture",
     searchTerms: ["wrist", "radius", "Colles", "sugar tong"],
-    diagramAlt: "A padded sugar-tong splint runs from the hand around the flexed elbow and returns to the hand, leaving the digits visible."
   },
   {
     id: "femoral-neck-fracture",
@@ -206,10 +182,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Obtain advanced imaging according to the clinical scenario and local protocol when suspicion persists despite negative or equivocal radiographs."
     ],
     warning: "Routine preoperative traction is not supported for every hip fracture.",
-    diagram: "position-of-comfort",
     headingId: "femoral-neck-fracture",
     searchTerms: ["femoral neck", "hip fracture", "occult", "Buck traction"],
-    diagramAlt: "The injured lower extremity is supported in the patient's tolerated position without forced alignment."
   },
   {
     id: "intertrochanteric-fracture",
@@ -222,10 +196,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Use Buck traction only when orthopedics orders it and it improves comfort or alignment."
     ],
     warning: "Do not apply traction automatically to every proximal-femur fracture.",
-    diagram: "position-of-comfort",
     headingId: "intertrochanteric-fracture",
     searchTerms: ["intertrochanteric", "hip fracture", "proximal femur", "Buck traction"],
-    diagramAlt: "The injured lower extremity is supported in the patient's tolerated position without forced alignment."
   },
   {
     id: "subtrochanteric-fracture",
@@ -238,10 +210,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Use temporary skin or skeletal traction only under orthopedic direction."
     ],
     warning: "Traction selection depends on deformity, pain, associated injuries, and the fixation plan.",
-    diagram: "position-of-comfort",
     headingId: "subtrochanteric-fracture",
     searchTerms: ["subtrochanteric", "proximal femur", "traction"],
-    diagramAlt: "The injured lower extremity is supported in the patient's tolerated position while awaiting an orthopedic plan."
   },
   {
     id: "femoral-shaft-fracture",
@@ -255,10 +225,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Use hospital skeletal traction only when selected and applied by orthopedics."
     ],
     warning: "Do not apply a Hare traction splint automatically; associated injuries may make standard traction splinting unsafe.",
-    diagram: "traction-splint",
     headingId: "femoral-shaft-fracture",
     searchTerms: ["femur", "shaft", "traction splint", "Hare"],
-    diagramAlt: "A traction splint supports an isolated midshaft femoral injury with longitudinal traction and visible distal circulation checks."
   },
   {
     id: "distal-femur-fracture",
@@ -271,10 +239,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Recheck and document distal neurovascular status after immobilization."
     ],
     warning: "Obtain urgent orthopedic consultation for a displaced, intra-articular, open, or neurovascularly compromised injury.",
-    diagram: "knee-immobilizer",
     headingId: "distal-femur-fracture",
     searchTerms: ["distal femur", "knee", "knee immobilizer", "long leg splint"],
-    diagramAlt: "A knee immobilizer supports the leg above and below the knee while leaving the distal extremity visible."
   },
   {
     id: "patella-fracture",
@@ -287,10 +253,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Recheck and document distal neurovascular status."
     ],
     warning: "Inability to perform a straight-leg raise, significant displacement, open injury, or threatened skin requires orthopedic evaluation.",
-    diagram: "knee-immobilizer",
     headingId: "patella-fracture",
     searchTerms: ["patella", "kneecap", "straight leg raise", "knee immobilizer"],
-    diagramAlt: "A knee immobilizer holds the injured knee in extension while leaving the foot visible for reassessment."
   },
   {
     id: "tibial-plateau-fracture",
@@ -304,10 +268,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Assess repeatedly for compartment syndrome and vascular injury."
     ],
     warning: "Assess repeatedly for compartment syndrome and vascular injury.",
-    diagram: "knee-immobilizer",
     headingId: "tibial-plateau-fracture",
     searchTerms: ["tibial plateau", "knee", "non weight bearing", "compartment syndrome"],
-    diagramAlt: "A knee immobilizer stabilizes an aligned plateau injury while the foot remains visible for neurovascular checks."
   },
   {
     id: "complex-tibial-plateau-or-proximal-tibia-fracture",
@@ -322,10 +284,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Perform frequent compartment checks and evaluate for vascular and ligamentous injury."
     ],
     warning: "High-energy, unstable, open, or neurovascularly compromised injuries require urgent orthopedic evaluation and repeated compartment and vascular assessment.",
-    diagram: "long-leg-posterior",
     headingId: "complex-tibial-plateau-or-proximal-tibia-fracture",
     searchTerms: ["complex tibial plateau", "proximal tibia", "long leg splint", "compartment syndrome"],
-    diagramAlt: "A well-padded posterior splint extends along the back of the leg from the thigh to the foot."
   },
   {
     id: "general-reduction-principles",
@@ -338,10 +298,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Provide stable temporary immobilization until definitive management."
     ],
     warning: "Open fracture, threatened skin, vascular compromise, compartment syndrome, irreducibility, or an unstable fracture-dislocation requires urgent orthopedic evaluation.",
-    diagram: "position-of-comfort",
     headingId: "general-reduction-principles",
     searchTerms: ["reduction", "alignment", "neurovascular", "fracture", "dislocation"],
-    diagramAlt: "An injured extremity is supported in a comfortable position while alignment and distal neurovascular status are assessed."
   },
   {
     id: "pediatric-both-bone-forearm-fractures",
@@ -354,10 +312,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Arrange appropriately timed follow-up because reduction can be lost."
     ],
     warning: "Prompt orthopedic consultation is required for open fracture, neurovascular injury, extreme swelling or compartment syndrome, inability to achieve or maintain reduction, elbow or wrist dislocation, ipsilateral upper-extremity fracture, or plastic deformation.",
-    diagram: "position-of-comfort",
     headingId: "pediatric-both-bone-forearm-fractures",
     searchTerms: ["pediatric", "both bone", "forearm", "radius", "ulna", "periosteum"],
-    diagramAlt: "A child's injured forearm is supported without force while skin, alignment, and distal neurovascular status are assessed."
   },
   {
     id: "splinting-technique",
@@ -372,10 +328,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Recheck and document distal neurovascular status after application."
     ],
     warning: "Avoid tight circumferential wrapping during acute swelling, and never use very hot water.",
-    diagram: "position-of-comfort",
     headingId: "splinting-technique",
     searchTerms: ["splint", "padding", "plaster", "fiberglass", "neurovascular"],
-    diagramAlt: "A padded extremity is supported in a comfortable injury-appropriate position before splint molding."
   },
   {
     id: "position-of-function",
@@ -389,10 +343,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Adjust the position for the specific injury."
     ],
     warning: "Do not force a standard hand posture when the injury requires another position.",
-    diagram: "position-of-function",
     headingId: "position-of-function",
     searchTerms: ["intrinsic plus", "safe position", "MCP", "wrist", "hand"],
-    diagramAlt: "The wrist is slightly extended, the MCP joints are flexed, and the interphalangeal joints are near extension."
   },
   {
     id: "hematoma-block",
@@ -406,10 +358,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Reassess analgesia before manipulation."
     ],
     warning: "A hematoma block is not the preferred block for every hand injury.",
-    diagram: "position-of-comfort",
     headingId: "hematoma-block",
     searchTerms: ["hematoma block", "distal radius", "local anesthesia", "reduction"],
-    diagramAlt: "The injured extremity rests in a supported position while analgesia is established before reduction."
   },
   {
     id: "intra-articular-shoulder-block",
@@ -423,10 +373,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Use procedural sedation when clinically indicated."
     ],
     warning: "Do not assume intra-articular analgesia will be adequate for every patient or reduction.",
-    diagram: "position-of-comfort",
     headingId: "intra-articular-shoulder-block",
     searchTerms: ["shoulder block", "intra-articular", "lidocaine", "dislocation", "analgesia"],
-    diagramAlt: "The injured arm is supported in a comfortable position while analgesia is established before reduction."
   },
   {
     id: "bier-block",
@@ -440,10 +388,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Ensure trained personnel are present."
     ],
     warning: "Do not perform intravenous regional anesthesia as an improvised bedside technique.",
-    diagram: "position-of-comfort",
     headingId: "bier-block",
     searchTerms: ["Bier block", "intravenous regional anesthesia", "tourniquet", "upper extremity"],
-    diagramAlt: "The distal upper extremity is supported in a controlled procedural position for regional anesthesia."
   },
   {
     id: "buck-traction",
@@ -457,10 +403,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Use only the ordered weight."
     ],
     warning: "Do not apply Buck traction automatically to every proximal-femur fracture or use a universal percentage-of-body-weight rule.",
-    diagram: "buck-traction",
     headingId: "buck-traction",
     searchTerms: ["Buck traction", "skin traction", "hip fracture", "proximal femur"],
-    diagramAlt: "Skin traction is applied along the lower leg with the ordered weight aligned beyond the foot of the bed."
   },
   {
     id: "skeletal-traction",
@@ -474,10 +418,8 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Monitor neurovascular status, pin sites, pressure areas, and alignment."
     ],
     warning: "Do not teach pin placement or traction weight as a universal bedside memorization rule.",
-    diagram: "skeletal-traction",
     headingId: "skeletal-traction",
     searchTerms: ["skeletal traction", "Steinmann pin", "Kirschner wire", "transosseous"],
-    diagramAlt: "A transosseous traction pin is connected to an aligned traction system under orthopedic supervision."
   },
   {
     id: "traction-splint-contraindications",
@@ -491,9 +433,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Recheck and document distal neurovascular status after any traction device."
     ],
     warning: "These are potential contraindications or reasons to avoid a specific traction-splint device, not universal prohibitions.",
-    diagram: "traction-splint",
     headingId: "traction-splint-contraindications",
     searchTerms: ["traction splint", "contraindication", "pelvis", "hip", "knee", "amputation"],
-    diagramAlt: "A traction splint is shown with checkpoints at the pelvis, hip, knee, lower leg, and distal circulation."
   }
 ];

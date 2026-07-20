@@ -19,8 +19,6 @@ const GUIDE_FIXTURE = {
       device: "Sling for comfort",
       bullets: ["Support the arm in a sling.", "Recheck distal neurovascular status."],
       warning: "Escalate threatened skin or neurovascular compromise.",
-      diagram: "sling",
-      diagramAlt: "An arm supported in a sling.",
       detailFragment: "generated/notes/initial-immobilization-guide/clavicle-fracture.html"
     },
     {
@@ -30,8 +28,6 @@ const GUIDE_FIXTURE = {
       device: "Sugar-tong splint after reduction",
       bullets: ["Apply a sugar-tong splint.", "Keep digits visible."],
       warning: "Recheck distal neurovascular status.",
-      diagram: "sugar-tong",
-      diagramAlt: "A padded sugar-tong splint around the elbow.",
       detailFragment: "generated/notes/initial-immobilization-guide/distal-radius-fracture.html"
     },
     {
@@ -41,8 +37,6 @@ const GUIDE_FIXTURE = {
       device: "Knee immobilizer in extension",
       bullets: ["Immobilize the knee in extension."],
       warning: "Assess the extensor mechanism.",
-      diagram: "knee-immobilizer",
-      diagramAlt: "A knee immobilizer supports the leg.",
       detailFragment: "generated/notes/initial-immobilization-guide/patella-fracture.html"
     }
   ]
@@ -71,7 +65,7 @@ function installGuideDom() {
   });
 }
 
-test("selecting an injury updates bullets and diagram together", async () => {
+test("selecting an injury updates quick guidance", async () => {
   const dom = installGuideDom();
   const root = dom.window.document.querySelector("#immobilizationGuide");
   const app = createImmobilizationGuide({
@@ -85,16 +79,13 @@ test("selecting an injury updates bullets and diagram together", async () => {
     .click();
 
   assert.match(root.querySelector("[data-guide-quick]").textContent, /sugar-tong/i);
-  assert.equal(
-    root.querySelector(".imm-diagram svg").getAttribute("aria-label"),
-    GUIDE_FIXTURE.entries[1].diagramAlt
-  );
+  assert.equal(root.querySelector(".imm-diagram"), null);
 
   app.destroy();
   dom.window.close();
 });
 
-test("quick guidance precedes the diagram in accessible DOM order", async () => {
+test("quick guidance has a diagram-free accessible DOM order", async () => {
   const dom = installGuideDom();
   const root = dom.window.document.querySelector("#immobilizationGuide");
   const app = createImmobilizationGuide({ root, fetchImpl: async () => response(GUIDE_FIXTURE) });
@@ -109,8 +100,7 @@ test("quick guidance precedes the diagram in accessible DOM order", async () => 
     "imm-guide-actions",
     "imm-guide-warning",
     "note-disclaimer",
-    "imm-expand",
-    "imm-diagram"
+    "imm-expand"
   ]);
 
   app.destroy();
@@ -163,45 +153,14 @@ test("activated injury keeps focus after rerender", async () => {
   dom.window.close();
 });
 
-test("resize keeps the selected injury within the horizontal rail and destroy removes the listener", async () => {
+test("uses a wrapping entry grid and destroy clears the guide", async () => {
   const dom = installGuideDom();
   const root = dom.window.document.querySelector("#immobilizationGuide");
-  const frames = new Map();
-  let frameId = 0;
-  dom.window.requestAnimationFrame = callback => {
-    const id = ++frameId;
-    frames.set(id, callback);
-    return id;
-  };
-  dom.window.cancelAnimationFrame = id => frames.delete(id);
-  const flushFrames = () => {
-    const pending = [...frames.values()];
-    frames.clear();
-    for (const callback of pending) callback(0);
-  };
   const app = createImmobilizationGuide({ root, fetchImpl: async () => response(GUIDE_FIXTURE) });
   await app.load();
-  flushFrames();
-
-  root.querySelector('[data-guide-entry="distal-radius-fracture"]').click();
-  flushFrames();
-  const rail = root.querySelector(".imm-guide-entries");
-  const selected = root.querySelector('[data-guide-entry="distal-radius-fracture"]');
-  rail.scrollLeft = 10;
-  rail.getBoundingClientRect = () => ({ left: 20, right: 320 });
-  selected.getBoundingClientRect = () => ({ left: 350, right: 520 });
-
-  dom.window.dispatchEvent(new dom.window.Event("resize"));
-  assert.equal(rail.scrollLeft, 10, "resize work should wait for the next layout frame");
-  flushFrames();
-  assert.equal(rail.scrollLeft, 210, "only the rail should scroll enough to reveal the current control");
-
-  dom.window.dispatchEvent(new dom.window.Event("resize"));
-  assert.equal(frames.size, 1);
+  assert.equal(root.querySelector(".imm-guide-entries").scrollLeft, 0);
   app.destroy();
-  assert.equal(frames.size, 0, "destroy should cancel pending rail work");
-  dom.window.dispatchEvent(new dom.window.Event("resize"));
-  assert.equal(frames.size, 0, "destroy should remove the resize listener");
+  assert.equal(root.childElementCount, 0);
 
   dom.window.close();
 });
@@ -367,7 +326,7 @@ test("changing injury invalidates an old detail response", async () => {
   dom.window.close();
 });
 
-test("fragment failure keeps the quick guide and diagram visible with inline retry", async () => {
+test("fragment failure keeps the quick guide visible with inline retry", async () => {
   const dom = installGuideDom();
   const root = dom.window.document.querySelector("#immobilizationGuide");
   const app = createImmobilizationGuide({
@@ -381,7 +340,7 @@ test("fragment failure keeps the quick guide and diagram visible with inline ret
   await tick();
 
   assert.ok(root.querySelector("[data-guide-quick]"));
-  assert.ok(root.querySelector(".imm-diagram svg"));
+  assert.equal(root.querySelector(".imm-diagram"), null);
   assert.match(root.querySelector("[data-guide-detail]").textContent, /could not load/i);
   assert.match(root.querySelector("[data-guide-detail] button").textContent, /Retry section/i);
 
@@ -427,9 +386,7 @@ test("rejects malformed runtime indexes before rendering clinical guidance", asy
     ["entry outside section list", payload => { payload.entries[2].section = "Traction"; }],
     ["missing display string", payload => { payload.entries[0].label = ""; }],
     ["invalid bullets", payload => { payload.entries[0].bullets = ["", 42]; }],
-    ["unsafe detail path", payload => { payload.entries[0].detailFragment = "../private.html"; }],
-    ["missing diagram id", payload => { payload.entries[0].diagram = ""; }],
-    ["missing diagram description", payload => { payload.entries[0].diagramAlt = ""; }]
+    ["unsafe detail path", payload => { payload.entries[0].detailFragment = "../private.html"; }]
   ];
 
   for (const [name, mutate] of cases) {
@@ -548,22 +505,6 @@ test("destroy invalidates deferred detail and makes later load a true no-op", as
   assert.equal(root.childElementCount, 0);
   assert.equal(root.querySelector("#stale-destroy"), null);
 
-  dom.window.close();
-});
-
-test("unknown guide diagrams use the controller's accessible text fallback", async () => {
-  const dom = installGuideDom();
-  const root = dom.window.document.querySelector("#immobilizationGuide");
-  const unknown = structuredClone(GUIDE_FIXTURE);
-  unknown.entries[0].diagram = "future-device";
-  unknown.entries[0].diagramAlt = "A text-only fallback description for the future device.";
-  const app = createImmobilizationGuide({ root, fetchImpl: async () => response(unknown) });
-  await app.load();
-
-  assert.equal(root.querySelector(".imm-diagram svg"), null);
-  assert.equal(root.querySelector(".imm-diagram-fallback").textContent, unknown.entries[0].diagramAlt);
-
-  app.destroy();
   dom.window.close();
 });
 

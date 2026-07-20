@@ -9,39 +9,6 @@ import { parseNoteSource } from "../scripts/lib/notes.mjs";
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-const APPROVED_DIAGRAM_BY_ID = {
-  "clavicle-fracture": "sling",
-  "scapula-fracture": "sling",
-  "shoulder-dislocation": "sling-swathe",
-  "proximal-humerus-fracture": "sling-swathe",
-  "humeral-shaft-fracture": "coaptation",
-  "distal-humerus-fracture": "posterior-long-arm",
-  "olecranon-fracture": "posterior-long-arm",
-  "radial-head-fracture": "sling",
-  "elbow-dislocation": "posterior-long-arm",
-  "terrible-triad-of-the-elbow": "posterior-long-arm",
-  "forearm-fracture": "sugar-tong",
-  "distal-radius-fracture": "sugar-tong",
-  "femoral-neck-fracture": "position-of-comfort",
-  "intertrochanteric-fracture": "position-of-comfort",
-  "subtrochanteric-fracture": "position-of-comfort",
-  "femoral-shaft-fracture": "traction-splint",
-  "distal-femur-fracture": "knee-immobilizer",
-  "patella-fracture": "knee-immobilizer",
-  "tibial-plateau-fracture": "knee-immobilizer",
-  "complex-tibial-plateau-or-proximal-tibia-fracture": "long-leg-posterior",
-  "general-reduction-principles": "position-of-comfort",
-  "pediatric-both-bone-forearm-fractures": "position-of-comfort",
-  "splinting-technique": "position-of-comfort",
-  "position-of-function": "position-of-function",
-  "hematoma-block": "position-of-comfort",
-  "intra-articular-shoulder-block": "position-of-comfort",
-  "bier-block": "position-of-comfort",
-  "buck-traction": "buck-traction",
-  "skeletal-traction": "skeletal-traction",
-  "traction-splint-contraindications": "traction-splint"
-};
-
 const ENTRY = {
   id: "distal-radius-fracture",
   section: "Upper extremity",
@@ -49,10 +16,8 @@ const ENTRY = {
   device: "Sugar-tong splint",
   bullets: ["Control wrist motion.", "Limit forearm rotation.", "Recheck distal neurovascular status."],
   warning: "Avoid excessive wrist flexion or tight wrapping.",
-  diagram: "sugar-tong",
   headingId: "distal-radius-fracture",
   searchTerms: ["wrist", "colles", "radius"],
-  diagramAlt: "Sugar-tong splint running from the hand around the elbow and back to the hand."
 };
 
 test("compiles complete guide metadata against note sections", () => {
@@ -70,7 +35,7 @@ test("compiles complete guide metadata against note sections", () => {
   assert.equal(result.entries[0].detailFragment, "generated/notes/initial-immobilization-guide/distal-radius-fracture.html");
 });
 
-test("rejects unknown headings, diagrams, duplicate IDs, and short bullet lists", () => {
+test("rejects unknown headings, duplicate IDs, and short bullet lists", () => {
   assert.throws(() => compileImmobilizationGuide({
     note: {
       title: "Guide",
@@ -79,24 +44,16 @@ test("rejects unknown headings, diagrams, duplicate IDs, and short bullet lists"
       sources: [],
       sections: []
     },
-    entries: [{ ...ENTRY, diagram: "missing", bullets: ["Only one"] }, { ...ENTRY }]
-  }), /headingId.*diagram.*bullets.*duplicate/i);
+    entries: [{ ...ENTRY, bullets: ["Only one"] }, { ...ENTRY }]
+  }), /headingId.*bullets.*duplicate/i);
 });
 
-test("real guide data covers the complete approved content and diagram scope", () => {
+test("real guide data covers the complete approved clinical content", () => {
   assert.deepEqual([...new Set(IMMOBILIZATION_GUIDE_ENTRIES.map(item => item.section))], [
     "Upper extremity", "Lower extremity", "General principles", "Analgesia", "Traction"
   ]);
-  assert.deepEqual(IMMOBILIZATION_GUIDE_ENTRIES.map(item => item.id), Object.keys(APPROVED_DIAGRAM_BY_ID));
-  assert.deepEqual(
-    Object.fromEntries(IMMOBILIZATION_GUIDE_ENTRIES.map(item => [item.id, item.diagram])),
-    APPROVED_DIAGRAM_BY_ID
-  );
-  assert.deepEqual([...new Set(IMMOBILIZATION_GUIDE_ENTRIES.map(item => item.diagram))], [
-    "sling", "sling-swathe", "coaptation", "posterior-long-arm", "sugar-tong",
-    "position-of-comfort", "traction-splint", "knee-immobilizer", "long-leg-posterior",
-    "position-of-function", "buck-traction", "skeletal-traction"
-  ]);
+  assert.equal(IMMOBILIZATION_GUIDE_ENTRIES.length, 30);
+  assert.ok(IMMOBILIZATION_GUIDE_ENTRIES.every(item => !Object.hasOwn(item, "diagram") && !Object.hasOwn(item, "diagramAlt")));
 });
 
 test("every approved note section has valid guide metadata", async () => {

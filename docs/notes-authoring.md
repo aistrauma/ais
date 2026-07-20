@@ -67,9 +67,9 @@ The build creates `site/generated/` and updates the service-worker metadata. Tho
 
 ## Interactive featured guides
 
-The Initial Immobilization Guide keeps reviewed prose and sources in `notes/initial-immobilization-guide.md`. Its companion file, `notes/initial-immobilization-guide.data.mjs`, contains only UI summaries, section grouping, search terms, accessible diagram descriptions, and diagram IDs.
+The Initial Immobilization Guide keeps reviewed prose and sources in `notes/initial-immobilization-guide.md`. Its companion file, `notes/initial-immobilization-guide.data.mjs`, contains only UI summaries, section grouping, and search terms.
 
-Every companion `headingId` must match an H2 in the Markdown note. `npm run build` validates the mapping and rejects unknown headings or diagrams. Clinical review must cover both the prose and the diagram path, positioning, and labels before merge.
+Every companion `headingId` must match an H2 in the Markdown note. `npm run build` validates the mapping. Clinical review must cover the prose before merge.
 
 From the repository root, preview the built site with:
 

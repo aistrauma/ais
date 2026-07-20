@@ -903,7 +903,7 @@ h1 small{color:#7fd4de;font-weight:600}
 #app.viewing{grid-template-columns:minmax(0,1fr) minmax(420px,58%)}
 @media(max-width:899px){#app.viewing{grid-template-columns:1fr}}
 #content{min-width:0;max-width:860px;margin:0 auto;width:100%}
-#app.viewing #content{margin:0}
+#app.viewing #content,#content.notes-reading{max-width:1400px;margin:0}
 
 .count{font-size:13px;color:var(--muted);padding:4px 2px 10px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;cursor:pointer}
@@ -1369,25 +1369,21 @@ html.dark .code-line.hitgrade{background:rgba(56,185,198,.14)}
 
     <div class="tview" id="viewNotes">
       <section id="notesApp" aria-labelledby="notesTitle">
-        <div class="notes-head">
-          <div>
-            <h2 id="notesTitle">Trauma Quick Notes</h2>
-            <p>Fast, source-backed references for trauma care. Verify against current guidance and local protocols.</p>
+        <div id="notesBrowser">
+          <div class="notes-head">
+            <div>
+              <h2 id="notesTitle">Trauma Quick Notes</h2>
+              <p>Fast, source-backed references for trauma care. Verify against current guidance and local protocols.</p>
+            </div>
           </div>
-        </div>
-        <div id="notesLanding">
-          <h3 id="immobilizationTitle" class="imm-feature-title">Initial Immobilization Guide</h3>
-          <section id="immobilizationGuide" class="imm-feature" aria-labelledby="immobilizationTitle">
-            <div data-guide-loading class="imm-loading" aria-live="polite">Loading Initial Immobilization Guide…</div>
-            <div data-guide-error class="imm-error" aria-live="polite"></div>
-            <div data-guide-content></div>
-          </section>
-          <label class="notes-search-label" for="notesSearch">Search notes</label>
-          <input id="notesSearch" type="search" placeholder="Search TEG, fractures, burns…" autocomplete="off">
-          <div id="notesCategories" class="notes-categories" aria-label="Note categories"></div>
-          <div id="notesCount" class="count" aria-live="polite"></div>
-          <div id="notesStatus" class="notes-status" aria-live="polite"></div>
-          <div id="notesCards" class="notes-grid"></div>
+          <div id="notesLanding">
+            <label class="notes-search-label" for="notesSearch">Search notes</label>
+            <input id="notesSearch" type="search" placeholder="Search TEG, fractures, burns…" autocomplete="off">
+            <div id="notesCategories" class="notes-categories" aria-label="Note categories"></div>
+            <div id="notesCount" class="count" aria-live="polite"></div>
+            <div id="notesStatus" class="notes-status" aria-live="polite"></div>
+            <div id="notesCards" class="notes-grid"></div>
+          </div>
         </div>
         <article id="noteDetail" class="note-detail" hidden></article>
       </section>
@@ -1456,6 +1452,7 @@ function showView(v){
     else node.classList.toggle("on", k === v);
   });
   if (v !== "search") closePDF();
+  if (v !== "notes") window.closeNotesReader?.();
 }
 tabBtns.forEach(b => { b.onclick = () => {
   if (b.dataset.view !== "notes" && location.hash.startsWith("#notes")) history.replaceState(null, "", location.pathname + location.search);
@@ -1895,12 +1892,14 @@ async function renderPage(p){
   if (renderQueued !== undefined){ const q = renderQueued; renderQueued = undefined; renderPage(q); }
 }
 window.openInlinePDF = function(printedPage, label){
+  window.closeNotesReader?.();
   const pdfPage = PRINTED_TO_PDF[printedPage] || printedPage || 1;
   el("app").classList.add("viewing");
   el("ipTitle").textContent = label || "AIS PDF";
   renderPage(pdfPage);
 };
 function closePDF(){ el("app").classList.remove("viewing"); }
+window.closeInlinePDF = closePDF;
 el("ipClose").onclick = closePDF;
 el("ipPrev").onclick = () => renderPage(curPdfPage - 1);
 el("ipNext").onclick = () => renderPage(curPdfPage + 1);

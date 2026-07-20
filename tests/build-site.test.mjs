@@ -47,10 +47,8 @@ const GUIDE_ENTRY = {
   device: "Sugar-tong splint",
   bullets: ["Control wrist motion.", "Limit forearm rotation.", "Recheck distal neurovascular status."],
   warning: "Avoid excessive wrist flexion or tight wrapping.",
-  diagram: "sugar-tong",
   headingId: "distal-radius-fracture",
-  searchTerms: ["wrist", "colles", "radius"],
-  diagramAlt: "Sugar-tong splint running from the hand around the elbow and back to the hand."
+  searchTerms: ["wrist", "colles", "radius"]
 };
 
 async function createRepository({ note } = {}) {
