@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildSite } from "../scripts/build-site.mjs";
+import { buildProject, buildSite } from "../scripts/build-site.mjs";
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -93,6 +93,21 @@ test("builds and precaches the initial immobilization guide index and section fr
   const swMeta = await readFile(path.join(repoRoot, "site/generated/sw-meta.js"), "utf8");
   assert.match(swMeta, /generated\/immobilization-guide\.json/);
   assert.match(swMeta, /generated\/notes\/initial-immobilization-guide\/distal-radius-fracture\.html/);
+});
+
+test("the production build uses the canonical immobilization guide data", async () => {
+  const repoRoot = await createRepository();
+  await writeFile(path.join(repoRoot, "notes/categories.json"), JSON.stringify(["Orthopedics"]));
+  await writeFile(
+    path.join(repoRoot, "notes/initial-immobilization-guide.md"),
+    await readFile(path.join(PROJECT_ROOT, "notes/initial-immobilization-guide.md"), "utf8")
+  );
+
+  await buildProject({ repoRoot });
+
+  const guide = JSON.parse(await readFile(path.join(repoRoot, "site/generated/immobilization-guide.json"), "utf8"));
+  assert.equal(guide.entries.length, 30);
+  assert.ok(guide.entries.some(entry => entry.id === "traction-splint-contraindications"));
 });
 
 test("builds an empty note index and precaches it", async () => {

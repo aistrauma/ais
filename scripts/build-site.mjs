@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { IMMOBILIZATION_GUIDE_ENTRIES } from "../notes/initial-immobilization-guide.data.mjs";
 import { compileImmobilizationGuide } from "./lib/immobilization-guide.mjs";
 import { compileNotes } from "./lib/notes.mjs";
 
@@ -80,8 +81,12 @@ export async function buildSite({ repoRoot, guideEntries = [] }) {
   return { noteCount: notes.length, buildId, assets: uniqueAssets };
 }
 
+export async function buildProject({ repoRoot }) {
+  return buildSite({ repoRoot, guideEntries: IMMOBILIZATION_GUIDE_ENTRIES });
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-  const result = await buildSite({ repoRoot });
+  const result = await buildProject({ repoRoot });
   console.log(`Built ${result.noteCount} notes (${result.buildId})`);
 }
