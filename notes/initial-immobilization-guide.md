@@ -211,7 +211,9 @@ The terrible triad comprises an elbow dislocation with radial-head and coronoid 
 ## Complex Tibial Plateau or Proximal Tibia Fracture
 
 - Apply a well-padded long-leg posterior splint; a knee immobilizer may be suitable for a selected aligned injury when swelling and soft tissues permit.
-- Avoid forceful reduction unless vascular compromise, threatened skin, severe deformity, or orthopedic direction requires it.
+- Avoid repeated or forceful manipulation.
+- Vascular compromise or threatened skin requires urgent, gentle realignment under orthopedic or emergency protocol and urgent orthopedic consultation.
+- Severe deformity requires urgent specialist direction.
 - Obtain urgent orthopedic evaluation for high-energy, unstable, open, or neurovascularly compromised injuries.
 - Perform frequent compartment checks and evaluate for associated vascular and ligamentous injury.
 
@@ -231,7 +233,9 @@ The terrible triad comprises an elbow dislocation with radial-head and coronoid 
 
 ## Traction-Splint Contraindications
 
-- Do not use a standard traction splint for suspected pelvic or acetabular injury, associated femoral-neck fracture, distal-femur or significant knee injury, or an ipsilateral tibia or ankle fracture.
-- Avoid it for partial amputation, an open injury when the device obstructs wound care, inability to assess or maintain distal perfusion, or another incompatible injury pattern.
+- Treat these as potential contraindications or reasons to avoid a specific traction-splint device, not as universal prohibitions.
+- Review the specific device and manufacturer instructions, injury pattern, orthopedic direction, and local protocol before use.
+- Potential reasons to avoid the selected device include suspected pelvic or acetabular injury, associated femoral-neck fracture, distal-femur or significant knee injury, or an ipsilateral tibia or ankle fracture.
+- Also consider partial amputation, an open injury when the device obstructs wound care, inability to assess or maintain distal perfusion, or another injury pattern incompatible with the device.
 - Examine the pelvis, hip, knee, and ipsilateral lower leg before application.
 - Recheck and document distal neurovascular status after any traction device is applied.

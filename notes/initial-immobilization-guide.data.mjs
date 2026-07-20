@@ -203,7 +203,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Provide analgesia and position for comfort.",
       "Obtain prompt orthopedic consultation and operative planning.",
       "Use Buck traction only when specifically ordered for comfort or alignment.",
-      "Obtain advanced imaging when suspicion persists despite negative or equivocal radiographs."
+      "Obtain advanced imaging according to the clinical scenario and local protocol when suspicion persists despite negative or equivocal radiographs."
     ],
     warning: "Routine preoperative traction is not supported for every hip fracture.",
     diagram: "position-of-comfort",
@@ -303,7 +303,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Maintain non-weight-bearing status pending orthopedic direction.",
       "Assess repeatedly for compartment syndrome and vascular injury."
     ],
-    warning: "Escalate immediately for compartment-syndrome or vascular findings.",
+    warning: "Assess repeatedly for compartment syndrome and vascular injury.",
     diagram: "knee-immobilizer",
     headingId: "tibial-plateau-fracture",
     searchTerms: ["tibial plateau", "knee", "non weight bearing", "compartment syndrome"],
@@ -316,11 +316,12 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
     device: "Long-leg posterior splint",
     bullets: [
       "Apply a well-padded long-leg posterior splint.",
-      "Avoid forceful reduction unless vascular compromise, threatened skin, severe deformity, or orthopedic direction requires it.",
-      "Perform frequent compartment checks and evaluate for vascular and ligamentous injury.",
-      "Obtain urgent orthopedic evaluation for high-energy, unstable, open, or neurovascularly compromised injury."
+      "Avoid repeated or forceful manipulation.",
+      "For vascular compromise or threatened skin, use urgent, gentle realignment under orthopedic or emergency protocol and obtain urgent orthopedic consultation.",
+      "Keep severe deformity under urgent specialist direction.",
+      "Perform frequent compartment checks and evaluate for vascular and ligamentous injury."
     ],
-    warning: "High-energy proximal-tibia injuries require repeated compartment and vascular assessment.",
+    warning: "High-energy, unstable, open, or neurovascularly compromised injuries require urgent orthopedic evaluation and repeated compartment and vascular assessment.",
     diagram: "long-leg-posterior",
     headingId: "complex-tibial-plateau-or-proximal-tibia-fracture",
     searchTerms: ["complex tibial plateau", "proximal tibia", "long leg splint", "compartment syndrome"],
@@ -352,7 +353,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Document skin and distal neurovascular findings before and after treatment.",
       "Arrange appropriately timed follow-up because reduction can be lost."
     ],
-    warning: "Prompt orthopedic consultation is required for open fracture, neurovascular injury, compartment syndrome, inability to achieve or maintain reduction, or an associated dislocation.",
+    warning: "Prompt orthopedic consultation is required for open fracture, neurovascular injury, extreme swelling or compartment syndrome, inability to achieve or maintain reduction, elbow or wrist dislocation, ipsilateral upper-extremity fracture, or plastic deformation.",
     diagram: "position-of-comfort",
     headingId: "pediatric-both-bone-forearm-fractures",
     searchTerms: ["pediatric", "both bone", "forearm", "radius", "ulna", "periosteum"],
@@ -370,7 +371,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
       "Use cool or lukewarm water and never very hot water.",
       "Recheck and document distal neurovascular status after application."
     ],
-    warning: "Worsening pain, paresthesia, color change, severe swelling, or delayed capillary refill after splinting requires immediate reassessment.",
+    warning: "Avoid tight circumferential wrapping during acute swelling, and never use very hot water.",
     diagram: "position-of-comfort",
     headingId: "splinting-technique",
     searchTerms: ["splint", "padding", "plaster", "fiberglass", "neurovascular"],
@@ -482,14 +483,14 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
     id: "traction-splint-contraindications",
     section: "Traction",
     label: "Traction-splint contraindications",
-    device: "Avoid standard traction splint when contraindicated",
+    device: "Check potential contraindications for the specific traction-splint device",
     bullets: [
-      "Check for pelvic, acetabular, femoral-neck, distal-femur, knee, tibia, and ankle injury.",
-      "Avoid the device for partial amputation or when it obstructs open-wound care.",
-      "Do not apply it when distal perfusion cannot be assessed or maintained.",
+      "Review the specific device and manufacturer instructions, injury pattern, orthopedic direction, and local protocol.",
+      "Consider pelvic, acetabular, femoral-neck, distal-femur, knee, tibia, and ankle injuries as potential reasons to avoid the selected device.",
+      "Also consider partial amputation, interference with open-wound care, and inability to assess or maintain distal perfusion.",
       "Recheck and document distal neurovascular status after any traction device."
     ],
-    warning: "Use another orthopedic-directed immobilization strategy when the injury pattern is incompatible with a standard traction splint.",
+    warning: "These are potential contraindications or reasons to avoid a specific traction-splint device, not universal prohibitions.",
     diagram: "traction-splint",
     headingId: "traction-splint-contraindications",
     searchTerms: ["traction splint", "contraindication", "pelvis", "hip", "knee", "amputation"],
