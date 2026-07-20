@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
-import { marked } from "marked";
+import { marked, Renderer } from "marked";
 import sanitizeHtml from "sanitize-html";
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -20,10 +20,30 @@ function textOnly(html) {
     .trim();
 }
 
+export function slugifyHeading(value) {
+  const slug = textOnly(value)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return slug || "section";
+}
+
 function renderMarkdown(markdown) {
-  return sanitizeHtml(marked.parse(markdown), {
+  const owners = new Map();
+  const renderer = new Renderer();
+  renderer.heading = function ({ tokens, depth }) {
+    const label = this.parser.parseInline(tokens);
+    const base = slugifyHeading(label);
+    const count = (owners.get(base) || 0) + 1;
+    owners.set(base, count);
+    const id = count === 1 ? base : `${base}-${count}`;
+    return `<h${depth} id="${id}">${label}</h${depth}>\n`;
+  };
+  return sanitizeHtml(marked.parse(markdown, { renderer }), {
     allowedTags: ["h2", "h3", "h4", "p", "ul", "ol", "li", "strong", "em", "blockquote", "code", "pre", "table", "thead", "tbody", "tr", "th", "td", "hr", "a"],
-    allowedAttributes: { a: ["href", "target", "rel"] },
+    allowedAttributes: { h2: ["id"], h3: ["id"], h4: ["id"], a: ["href", "target", "rel"] },
     allowedSchemes: ["https"],
     transformTags: {
       a: (_tag, attrs) => ({
@@ -32,6 +52,15 @@ function renderMarkdown(markdown) {
       })
     }
   });
+}
+
+export function extractH2Sections(html) {
+  const matches = [...html.matchAll(/<h2 id="([^"]+)">([\s\S]*?)<\/h2>/g)];
+  return matches.map((match, index) => ({
+    id: match[1],
+    title: textOnly(match[2]),
+    html: html.slice(match.index, matches[index + 1]?.index ?? html.length).trim()
+  }));
 }
 
 export function parseNoteSource({ source, filePath, categories }) {
@@ -79,6 +108,7 @@ export function parseNoteSource({ source, filePath, categories }) {
     lastReviewed,
     sources: data.sources.map(item => ({ title: item.title.trim(), url: item.url })),
     html,
+    sections: extractH2Sections(html),
     searchText
   };
 }
