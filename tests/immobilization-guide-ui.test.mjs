@@ -163,6 +163,49 @@ test("activated injury keeps focus after rerender", async () => {
   dom.window.close();
 });
 
+test("resize keeps the selected injury within the horizontal rail and destroy removes the listener", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const frames = new Map();
+  let frameId = 0;
+  dom.window.requestAnimationFrame = callback => {
+    const id = ++frameId;
+    frames.set(id, callback);
+    return id;
+  };
+  dom.window.cancelAnimationFrame = id => frames.delete(id);
+  const flushFrames = () => {
+    const pending = [...frames.values()];
+    frames.clear();
+    for (const callback of pending) callback(0);
+  };
+  const app = createImmobilizationGuide({ root, fetchImpl: async () => response(GUIDE_FIXTURE) });
+  await app.load();
+  flushFrames();
+
+  root.querySelector('[data-guide-entry="distal-radius-fracture"]').click();
+  flushFrames();
+  const rail = root.querySelector(".imm-guide-entries");
+  const selected = root.querySelector('[data-guide-entry="distal-radius-fracture"]');
+  rail.scrollLeft = 10;
+  rail.getBoundingClientRect = () => ({ left: 20, right: 320 });
+  selected.getBoundingClientRect = () => ({ left: 350, right: 520 });
+
+  dom.window.dispatchEvent(new dom.window.Event("resize"));
+  assert.equal(rail.scrollLeft, 10, "resize work should wait for the next layout frame");
+  flushFrames();
+  assert.equal(rail.scrollLeft, 210, "only the rail should scroll enough to reveal the current control");
+
+  dom.window.dispatchEvent(new dom.window.Event("resize"));
+  assert.equal(frames.size, 1);
+  app.destroy();
+  assert.equal(frames.size, 0, "destroy should cancel pending rail work");
+  dom.window.dispatchEvent(new dom.window.Event("resize"));
+  assert.equal(frames.size, 0, "destroy should remove the resize listener");
+
+  dom.window.close();
+});
+
 test("section and expansion controls keep focus across rerenders", async () => {
   const dom = installGuideDom();
   const root = dom.window.document.querySelector("#immobilizationGuide");

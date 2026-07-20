@@ -61,6 +61,39 @@ export function createImmobilizationGuide({
   let detailToken = 0;
   let loadToken = 0;
   let destroyed = false;
+  let railFrame = null;
+  const view = root.ownerDocument.defaultView;
+
+  const cancelRailFrame = () => {
+    if (railFrame === null) return;
+    if (view?.cancelAnimationFrame) view.cancelAnimationFrame(railFrame);
+    else clearTimeout(railFrame);
+    railFrame = null;
+  };
+
+  const keepSelectedEntryVisible = () => {
+    railFrame = null;
+    if (destroyed) return;
+    const rail = root.querySelector(".imm-guide-entries");
+    const current = root.querySelector('[data-guide-entry][aria-current="true"]');
+    if (!rail || !current) return;
+    const railRect = rail.getBoundingClientRect();
+    const currentRect = current.getBoundingClientRect();
+    if (currentRect.left < railRect.left) {
+      rail.scrollLeft = Math.max(0, rail.scrollLeft + currentRect.left - railRect.left);
+    } else if (currentRect.right > railRect.right) {
+      rail.scrollLeft += currentRect.right - railRect.right;
+    }
+  };
+
+  const scheduleSelectedEntryVisibility = () => {
+    if (destroyed || railFrame !== null) return;
+    railFrame = view?.requestAnimationFrame
+      ? view.requestAnimationFrame(keepSelectedEntryVisible)
+      : setTimeout(keepSelectedEntryVisible, 0);
+  };
+
+  view?.addEventListener("resize", scheduleSelectedEntryVisibility);
 
   const make = (tag, className, text) => {
     const node = root.ownerDocument.createElement(tag);
@@ -246,6 +279,7 @@ export function createImmobilizationGuide({
     const detail = renderExpandedDetail();
     if (detail) nodes.push(detail);
     root.replaceChildren(...nodes);
+    scheduleSelectedEntryVisibility();
   }
 
   async function load() {
@@ -276,6 +310,8 @@ export function createImmobilizationGuide({
       destroyed = true;
       loadToken += 1;
       detailToken += 1;
+      view?.removeEventListener("resize", scheduleSelectedEntryVisibility);
+      cancelRailFrame();
       root.replaceChildren();
     }
   };
