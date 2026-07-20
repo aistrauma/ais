@@ -88,7 +88,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
     device: "Posterior long-arm splint",
     bullets: [
       "Apply a well-padded posterior long-arm splint.",
-      "Use an elbow angle near 90 degrees only when swelling, fracture pattern, and vascular status permit.",
+      "Use an elbow angle near 90 degrees only when swelling, fracture pattern, vascular status, and orthopedic recommendations permit.",
       "Recheck and document distal neurovascular status after immobilization."
     ],
     warning: "Do not force elbow flexion if it worsens perfusion, pain, or skin tension.",
@@ -185,7 +185,7 @@ export const IMMOBILIZATION_GUIDE_ENTRIES = [
     device: "Sugar-tong splint after reduction",
     bullets: [
       "Use a sugar-tong splint after reduction to control wrist motion and forearm rotation.",
-      "Avoid excessive wrist flexion and tight circumferential wrapping.",
+      "After reduction, keep the wrist near neutral or in slight extension; avoid excessive flexion and tight circumferential wrapping.",
       "For a stable nondisplaced fracture, a volar wrist or short-arm splint may be appropriate."
     ],
     warning: "Recheck and document distal pulses, capillary refill, motor function, and sensation after application.",

@@ -156,3 +156,17 @@ test("reviewed safety qualifications remain aligned in note and quick metadata",
   assert.doesNotMatch(byId["tibial-plateau-fracture"].warning, /escalate immediately/i);
   assert.doesNotMatch(byId["splinting-technique"].warning, /worsening pain|paresthesia|color change|immediate reassessment/i);
 });
+
+test("upper-extremity quick metadata preserves positioning qualifiers", () => {
+  const byId = Object.fromEntries(IMMOBILIZATION_GUIDE_ENTRIES.map(entry => [entry.id, entry]));
+  const distalHumerus = byId["distal-humerus-fracture"];
+  const distalRadius = byId["distal-radius-fracture"];
+
+  assert.ok(distalHumerus.bullets.some(bullet => (
+    /near 90 degrees only when swelling, fracture pattern, vascular status, and orthopedic recommendations permit/i.test(bullet)
+  )));
+  assert.match(distalHumerus.warning, /do not force elbow flexion if it worsens perfusion, pain, or skin tension/i);
+  assert.ok(distalRadius.bullets.some(bullet => (
+    /after reduction, keep the wrist near neutral or in slight extension/i.test(bullet)
+  )));
+});
