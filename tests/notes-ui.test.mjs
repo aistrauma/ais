@@ -326,16 +326,27 @@ test("destroy removes Notes navigation listeners", t => {
 });
 
 test("loads the Notes tab assets and routes the shell to the Notes view", async () => {
-  const [html, css] = await Promise.all([
+  const [html, css, guideCss] = await Promise.all([
     readFile(new URL("../site/index.html", import.meta.url), "utf8"),
-    readFile(new URL("../site/notes.css", import.meta.url), "utf8")
+    readFile(new URL("../site/notes.css", import.meta.url), "utf8"),
+    readFile(new URL("../site/immobilization-guide.css", import.meta.url), "utf8").catch(() => "")
   ]);
   assert.match(html, /<link rel="stylesheet" href="notes\.css">/);
+  assert.match(html, /<link rel="stylesheet" href="immobilization-guide\.css">/);
   assert.match(html, /<button data-view="notes"><span class="ticon">🗒️<\/span><span>Notes<\/span><\/button>/);
   assert.match(html, /<div class="tview" id="viewNotes">/);
+  assert.match(html, /<h3 id="immobilizationTitle" class="imm-feature-title">Initial Immobilization Guide<\/h3>/);
+  assert.match(html, /<section id="immobilizationGuide"/);
   assert.match(html, /const VIEWS = \{ search:"viewSearch", templates:"viewTemplates", tqip:"viewTQIP", notes:"viewNotes", settings:"viewSettings" \};\s*window\.showView = showView;/);
+  assert.match(html, /<script type="module" src="immobilization-guide\.js"><\/script>/);
   assert.match(html, /<script type="module" src="notes\.js"><\/script>/);
   assert.match(html, /if \(b\.dataset\.view !== "notes" && location\.hash\.startsWith\("#notes"\)\) history\.replaceState\(null, "", location\.pathname \+ location\.search\);/);
   assert.match(css, /\.notes-grid\{display:grid/);
   assert.match(css, /\.note-body table/);
+  assert.match(guideCss, /\.imm-feature\{[^}]*display:grid/);
+  assert.match(guideCss, /\.imm-guide-sections/);
+  assert.match(guideCss, /\.imm-guide-entries/);
+  assert.match(guideCss, /\.imm-guide-quick/);
+  assert.match(guideCss, /:focus-visible/);
+  assert.match(guideCss, /@media\(max-width:767px\)/);
 });

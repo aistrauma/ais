@@ -1035,6 +1035,7 @@ html.dark .code-line.hitgrade{background:rgba(56,185,198,.14)}
 
 </style>
 <link rel="stylesheet" href="notes.css">
+<link rel="stylesheet" href="immobilization-guide.css">
 <link rel="stylesheet" href="tqip-accordions.css">
 </head>
 <body>
@@ -1375,6 +1376,12 @@ html.dark .code-line.hitgrade{background:rgba(56,185,198,.14)}
           </div>
         </div>
         <div id="notesLanding">
+          <h3 id="immobilizationTitle" class="imm-feature-title">Initial Immobilization Guide</h3>
+          <section id="immobilizationGuide" class="imm-feature" aria-labelledby="immobilizationTitle">
+            <div data-guide-loading class="imm-loading" aria-live="polite">Loading Initial Immobilization Guide…</div>
+            <div data-guide-error class="imm-error" aria-live="polite"></div>
+            <div data-guide-content></div>
+          </section>
           <label class="notes-search-label" for="notesSearch">Search notes</label>
           <input id="notesSearch" type="search" placeholder="Search TEG, fractures, burns…" autocomplete="off">
           <div id="notesCategories" class="notes-categories" aria-label="Note categories"></div>
@@ -1911,6 +1918,7 @@ if ("serviceWorker" in navigator){
   window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
 }
 </script>
+<script type="module" src="immobilization-guide.js"></script>
 <script type="module" src="notes.js"></script>
 <script type="module" src="tqip-accordions.js"></script>
 </body>
