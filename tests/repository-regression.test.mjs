@@ -41,3 +41,20 @@ test("core views and AIS data remain present", async () => {
     assert.match(html, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
 });
+
+test("keeps the featured immobilization guide source and assets", async () => {
+  for (const path of [
+    "notes/initial-immobilization-guide.md",
+    "notes/initial-immobilization-guide.data.mjs",
+    "site/immobilization-guide.js",
+    "site/immobilization-guide.css",
+    "site/immobilization-diagrams.js"
+  ]) assert.equal(await missing(path), false, path);
+});
+
+test("documents the interactive featured guide review workflow", async () => {
+  const authoringGuide = await readFile("docs/notes-authoring.md", "utf8");
+  assert.match(authoringGuide, /^## Interactive featured guides$/m);
+  assert.match(authoringGuide, /Every companion `headingId` must match an H2 in the Markdown note\./);
+  assert.match(authoringGuide, /Clinical review must cover both the prose and the diagram path, positioning, and labels before merge\./);
+});
