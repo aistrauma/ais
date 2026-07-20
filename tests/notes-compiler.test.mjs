@@ -29,9 +29,27 @@ test("parses, sanitizes, and normalizes a valid note", () => {
     categories: ["Resuscitation"]
   });
   assert.equal(note.slug, "teg-interpretation");
-  assert.match(note.html, /<h2>Key thresholds<\/h2>/);
+  assert.match(note.html, /<h2 id="key-thresholds">Key thresholds<\/h2>/);
   assert.doesNotMatch(note.html, /<script/i);
   assert.match(note.searchText, /interpreting a teg key thresholds/i);
+});
+
+test("adds stable heading IDs and extracts H2 sections", () => {
+  const note = parseNoteSource({
+    source: VALID.replace(
+      "## Key thresholds",
+      "## Distal Radius Fracture\n\nQuick text.\n\n## Distal Radius Fracture"
+    ),
+    filePath: "notes/immobilization.md",
+    categories: ["Resuscitation"]
+  });
+  assert.match(note.html, /<h2 id="distal-radius-fracture">/);
+  assert.match(note.html, /<h2 id="distal-radius-fracture-2">/);
+  assert.deepEqual(note.sections.map(section => section.id), [
+    "distal-radius-fracture",
+    "distal-radius-fracture-2"
+  ]);
+  assert.match(note.sections[0].html, /Quick text/);
 });
 
 test("reports all invalid metadata fields in one error", () => {
