@@ -336,10 +336,12 @@ test("loads the Notes tab assets and routes the shell to the Notes view", async 
   assert.match(html, /<button data-view="notes"><span class="ticon">🗒️<\/span><span>Notes<\/span><\/button>/);
   assert.match(html, /<div class="tview" id="viewNotes">/);
   assert.match(html, /<h3 id="immobilizationTitle" class="imm-feature-title">Initial Immobilization Guide<\/h3>/);
-  assert.match(html, /<section id="immobilizationGuide"/);
+  assert.match(html, /<section id="immobilizationGuide" class="imm-feature" aria-labelledby="immobilizationTitle">/);
+  assert.ok(html.indexOf('<section id="immobilizationGuide"') < html.indexOf('<input id="notesSearch"'));
   assert.match(html, /const VIEWS = \{ search:"viewSearch", templates:"viewTemplates", tqip:"viewTQIP", notes:"viewNotes", settings:"viewSettings" \};\s*window\.showView = showView;/);
   assert.match(html, /<script type="module" src="immobilization-guide\.js"><\/script>/);
   assert.match(html, /<script type="module" src="notes\.js"><\/script>/);
+  assert.ok(html.indexOf('src="immobilization-guide.js"') < html.indexOf('src="notes.js"'));
   assert.match(html, /if \(b\.dataset\.view !== "notes" && location\.hash\.startsWith\("#notes"\)\) history\.replaceState\(null, "", location\.pathname \+ location\.search\);/);
   assert.match(css, /\.notes-grid\{display:grid/);
   assert.match(css, /\.note-body table/);

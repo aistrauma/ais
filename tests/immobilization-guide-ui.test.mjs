@@ -94,6 +94,29 @@ test("selecting an injury updates bullets and diagram together", async () => {
   dom.window.close();
 });
 
+test("quick guidance precedes the diagram in accessible DOM order", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const app = createImmobilizationGuide({ root, fetchImpl: async () => response(GUIDE_FIXTURE) });
+
+  await app.load();
+
+  const quick = root.querySelector("[data-guide-quick]");
+  const order = [...quick.children].map(node => node.className || node.tagName);
+  assert.deepEqual(order, [
+    "H3",
+    "imm-guide-device",
+    "imm-guide-actions",
+    "imm-guide-warning",
+    "note-disclaimer",
+    "imm-expand",
+    "imm-diagram"
+  ]);
+
+  app.destroy();
+  dom.window.close();
+});
+
 test("renders section and injury controls in source order with accessible selection state", async () => {
   const dom = installGuideDom();
   const root = dom.window.document.querySelector("#immobilizationGuide");

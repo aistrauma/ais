@@ -200,11 +200,6 @@ export function createImmobilizationGuide({
     for (const bullet of entry.bullets) list.append(make("li", "", bullet));
     container.append(list);
     container.append(make("p", "imm-guide-warning", entry.warning));
-    container.append(renderImmobilizationDiagram({
-      id: entry.diagram,
-      document: root.ownerDocument,
-      alt: entry.diagramAlt
-    }));
     container.append(make("p", "note-disclaimer", DISCLAIMER));
 
     const toggle = make("button", "imm-expand", expanded ? "Collapse full guide" : "Expand full guide");
@@ -227,6 +222,11 @@ export function createImmobilizationGuide({
       });
     }
     container.append(toggle);
+    container.append(renderImmobilizationDiagram({
+      id: entry.diagram,
+      document: root.ownerDocument,
+      alt: entry.diagramAlt
+    }));
     return container;
   }
 
