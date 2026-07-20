@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 import { initTqipAccordions } from "../site/tqip-accordions.js";
 
@@ -69,4 +70,12 @@ test("destroy removes section and control listeners", t => {
 
   document.querySelector("#tqipExpandAll").click();
   assert.ok([...document.querySelectorAll("details")].every(item => !item.open));
+});
+
+test("keeps collapsed TQIP rows compact without shrinking the tap target", async () => {
+  const css = await readFile(new URL("../site/tqip-accordions.css", import.meta.url), "utf8");
+
+  assert.match(css, /#viewTQIP details\.card\s*{[^}]*padding:\s*0 16px;/s);
+  assert.match(css, /#viewTQIP details > summary\s*{[^}]*min-height:\s*44px;/s);
+  assert.match(css, /#viewTQIP \.tqip-section-content\s*{[^}]*padding-bottom:\s*14px;/s);
 });

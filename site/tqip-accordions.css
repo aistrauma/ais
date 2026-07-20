@@ -11,6 +11,11 @@
   font-size:12.5px;
 }
 
+#viewTQIP details.card{
+  margin-bottom:6px;
+  padding:0 16px;
+}
+
 #viewTQIP details > summary{
   align-items:center;
   display:flex;
@@ -32,3 +37,7 @@
 }
 
 #viewTQIP details[open] > summary::after{transform:rotate(90deg)}
+
+#viewTQIP .tqip-section-content{
+  padding-bottom:14px;
+}
