@@ -241,7 +241,8 @@ test("Expand fetches only the selected fragment and renders sources and disclaim
   assert.equal(source.protocol, "https:");
   assert.equal(source.target, "_blank");
   assert.equal(source.rel, "noopener noreferrer");
-  assert.match(root.querySelector("[data-guide-detail]").textContent, /Educational quick reference only/i);
+  assert.match(root.textContent, /Educational quick reference only/i);
+  assert.equal(root.querySelectorAll(".note-disclaimer").length, 1);
 
   app.destroy();
   dom.window.close();
@@ -317,6 +318,184 @@ test("fragment failure keeps the quick guide and diagram visible with inline ret
   assert.ok(root.querySelector(".imm-diagram svg"));
   assert.match(root.querySelector("[data-guide-detail]").textContent, /could not load/i);
   assert.match(root.querySelector("[data-guide-detail] button").textContent, /Retry section/i);
+
+  app.destroy();
+  dom.window.close();
+});
+
+test("the educational disclaimer remains visible when collapsed, loading, and failed", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const detail = deferred();
+  const app = createImmobilizationGuide({
+    root,
+    fetchImpl: async url => url.includes("immobilization-guide.json")
+      ? response(GUIDE_FIXTURE)
+      : detail.promise
+  });
+  await app.load();
+
+  assert.match(root.querySelector("[data-guide-quick]").textContent, /Educational quick reference only/i);
+  assert.equal(root.querySelectorAll(".note-disclaimer").length, 1);
+
+  root.querySelector("[data-guide-expand]").click();
+  assert.match(root.querySelector("[data-guide-quick]").textContent, /Educational quick reference only/i);
+  assert.match(root.querySelector("[data-guide-detail]").textContent, /Loading full guide/i);
+  assert.equal(root.querySelectorAll(".note-disclaimer").length, 1);
+
+  detail.resolve(response("failed", { ok: false, status: 503 }));
+  await tick();
+  assert.match(root.querySelector("[data-guide-detail]").textContent, /could not load/i);
+  assert.match(root.querySelector("[data-guide-quick]").textContent, /Educational quick reference only/i);
+  assert.equal(root.querySelectorAll(".note-disclaimer").length, 1);
+
+  app.destroy();
+  dom.window.close();
+});
+
+test("rejects malformed runtime indexes before rendering clinical guidance", async () => {
+  const cases = [
+    ["blank section", payload => { payload.sections[1] = " "; }],
+    ["section without an entry", payload => { payload.sections.push("Traction"); }],
+    ["duplicate entry id", payload => { payload.entries[1].id = payload.entries[0].id; }],
+    ["entry outside section list", payload => { payload.entries[2].section = "Traction"; }],
+    ["missing display string", payload => { payload.entries[0].label = ""; }],
+    ["invalid bullets", payload => { payload.entries[0].bullets = ["", 42]; }],
+    ["unsafe detail path", payload => { payload.entries[0].detailFragment = "../private.html"; }],
+    ["missing diagram id", payload => { payload.entries[0].diagram = ""; }],
+    ["missing diagram description", payload => { payload.entries[0].diagramAlt = ""; }]
+  ];
+
+  for (const [name, mutate] of cases) {
+    const dom = installGuideDom();
+    const root = dom.window.document.querySelector("#immobilizationGuide");
+    const invalid = structuredClone(GUIDE_FIXTURE);
+    mutate(invalid);
+    const app = createImmobilizationGuide({ root, fetchImpl: async () => response(invalid) });
+    await app.load();
+    assert.match(root.textContent, /could not load/i, name);
+    assert.equal(root.querySelector("[data-guide-quick]"), null, name);
+    app.destroy();
+    dom.window.close();
+  }
+});
+
+test("a malformed later section replaces previous guidance with a load error", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  let payload = GUIDE_FIXTURE;
+  const app = createImmobilizationGuide({ root, fetchImpl: async () => response(payload) });
+  await app.load();
+  assert.ok(root.querySelector("[data-guide-quick]"));
+
+  payload = structuredClone(GUIDE_FIXTURE);
+  payload.sections.push("Traction");
+  await app.load();
+
+  assert.match(root.textContent, /could not load/i);
+  assert.equal(root.querySelector("[data-guide-quick]"), null);
+
+  app.destroy();
+  dom.window.close();
+});
+
+test("collapse invalidates a deferred detail response", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const oldDetail = deferred();
+  const app = createImmobilizationGuide({
+    root,
+    fetchImpl: async url => url.includes("immobilization-guide.json")
+      ? response(GUIDE_FIXTURE)
+      : oldDetail.promise
+  });
+  await app.load();
+  root.querySelector("[data-guide-expand]").click();
+  root.querySelector("[data-guide-collapse]").click();
+
+  oldDetail.resolve(response("<p id=stale-collapse>Stale detail</p>"));
+  await tick();
+
+  assert.equal(root.querySelector("#stale-collapse"), null);
+  assert.equal(root.querySelector("[data-guide-detail]"), null);
+  assert.ok(root.querySelector("[data-guide-quick]"));
+
+  app.destroy();
+  dom.window.close();
+});
+
+test("reload invalidates a deferred detail response", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const oldDetail = deferred();
+  let indexRequests = 0;
+  const app = createImmobilizationGuide({
+    root,
+    fetchImpl: async url => {
+      if (url.includes("immobilization-guide.json")) {
+        indexRequests += 1;
+        return response(GUIDE_FIXTURE);
+      }
+      return oldDetail.promise;
+    }
+  });
+  await app.load();
+  root.querySelector("[data-guide-expand]").click();
+  await app.load();
+
+  oldDetail.resolve(response("<p id=stale-reload>Stale detail</p>"));
+  await tick();
+
+  assert.equal(indexRequests, 2);
+  assert.equal(root.querySelector("#stale-reload"), null);
+  assert.equal(root.querySelector("[data-guide-detail]"), null);
+  assert.ok(root.querySelector("[data-guide-quick]"));
+
+  app.destroy();
+  dom.window.close();
+});
+
+test("destroy invalidates deferred detail and makes later load a true no-op", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const oldDetail = deferred();
+  let fetches = 0;
+  const app = createImmobilizationGuide({
+    root,
+    fetchImpl: async url => {
+      fetches += 1;
+      return url.includes("immobilization-guide.json")
+        ? response(GUIDE_FIXTURE)
+        : oldDetail.promise;
+    }
+  });
+  await app.load();
+  root.querySelector("[data-guide-expand]").click();
+  assert.equal(fetches, 2);
+
+  app.destroy();
+  oldDetail.resolve(response("<p id=stale-destroy>Stale detail</p>"));
+  await tick();
+  await app.load();
+
+  assert.equal(fetches, 2);
+  assert.equal(root.childElementCount, 0);
+  assert.equal(root.querySelector("#stale-destroy"), null);
+
+  dom.window.close();
+});
+
+test("unknown guide diagrams use the controller's accessible text fallback", async () => {
+  const dom = installGuideDom();
+  const root = dom.window.document.querySelector("#immobilizationGuide");
+  const unknown = structuredClone(GUIDE_FIXTURE);
+  unknown.entries[0].diagram = "future-device";
+  unknown.entries[0].diagramAlt = "A text-only fallback description for the future device.";
+  const app = createImmobilizationGuide({ root, fetchImpl: async () => response(unknown) });
+  await app.load();
+
+  assert.equal(root.querySelector(".imm-diagram svg"), null);
+  assert.equal(root.querySelector(".imm-diagram-fallback").textContent, unknown.entries[0].diagramAlt);
 
   app.destroy();
   dom.window.close();

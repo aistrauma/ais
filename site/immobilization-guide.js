@@ -1,5 +1,54 @@
 import { renderImmobilizationDiagram } from "./immobilization-diagrams.js";
 
+const DISCLAIMER = "Educational quick reference only. Verify against current guidance and local protocols.";
+const DETAIL_FRAGMENT = /^generated\/notes\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\.html$/;
+const ENTRY_TEXT_FIELDS = ["id", "section", "label", "device", "warning", "diagram", "diagramAlt"];
+
+const isNonemptyString = value => typeof value === "string" && Boolean(value.trim());
+
+const isHttpsSource = source => {
+  if (!source || !isNonemptyString(source.title) || !isNonemptyString(source.url)) return false;
+  try {
+    return new URL(source.url).protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+function isValidGuideIndex(value) {
+  if (
+    !value
+    || value.version !== 1
+    || !Array.isArray(value.sections)
+    || value.sections.length === 0
+    || !Array.isArray(value.entries)
+    || value.entries.length === 0
+    || !Array.isArray(value.sources)
+    || !value.sources.every(isHttpsSource)
+    || !value.sections.every(isNonemptyString)
+    || new Set(value.sections).size !== value.sections.length
+  ) return false;
+
+  const sections = new Set(value.sections);
+  const ids = new Set();
+  for (const entry of value.entries) {
+    if (
+      !entry
+      || !ENTRY_TEXT_FIELDS.every(field => isNonemptyString(entry[field]))
+      || !sections.has(entry.section)
+      || ids.has(entry.id)
+      || !Array.isArray(entry.bullets)
+      || entry.bullets.length === 0
+      || !entry.bullets.every(isNonemptyString)
+      || !isNonemptyString(entry.detailFragment)
+      || !DETAIL_FRAGMENT.test(entry.detailFragment)
+    ) return false;
+    ids.add(entry.id);
+  }
+
+  return value.sections.every(name => value.entries.some(entry => entry.section === name));
+}
+
 export function createImmobilizationGuide({
   root,
   fetchImpl = fetch,
@@ -90,11 +139,6 @@ export function createImmobilizationGuide({
       if (!detail) return;
       detail.innerHTML = html;
       renderSources(detail);
-      detail.append(make(
-        "p",
-        "note-disclaimer",
-        "Educational quick reference only. Verify against current guidance and local protocols."
-      ));
     } catch {
       if (destroyed || token !== detailToken || activeEntry()?.id !== entry.id || !expanded) return;
       renderDetailError(entry);
@@ -161,6 +205,7 @@ export function createImmobilizationGuide({
       document: root.ownerDocument,
       alt: entry.diagramAlt
     }));
+    container.append(make("p", "note-disclaimer", DISCLAIMER));
 
     const toggle = make("button", "imm-expand", expanded ? "Collapse full guide" : "Expand full guide");
     toggle.type = "button";
@@ -204,6 +249,7 @@ export function createImmobilizationGuide({
   }
 
   async function load() {
+    if (destroyed) return;
     const token = ++loadToken;
     detailToken += 1;
     renderLoading();
@@ -211,15 +257,7 @@ export function createImmobilizationGuide({
       const response = await fetchImpl(indexUrl);
       if (!response.ok) throw new Error(`Guide request failed (${response.status})`);
       const next = await response.json();
-      if (
-        next.version !== 1
-        || !Array.isArray(next.sections)
-        || next.sections.length === 0
-        || !Array.isArray(next.entries)
-        || next.entries.length === 0
-        || !Array.isArray(next.sources)
-        || !next.entries.some(entry => entry.section === next.sections[0])
-      ) throw new Error("Unsupported guide index");
+      if (!isValidGuideIndex(next)) throw new Error("Unsupported guide index");
       if (destroyed || token !== loadToken) return;
       payload = next;
       section = next.sections[0];
