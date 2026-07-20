@@ -24,6 +24,35 @@ sources:
 - Treat the patient, not an isolated number.
 `;
 
+const VALID_GUIDE_NOTE = `---
+title: Initial Immobilization Guide
+slug: initial-immobilization-guide
+category: Resuscitation
+tags: [splinting, immobilization]
+summary: Initial immobilization options by injury pattern.
+last_reviewed: 2026-07-19
+sources:
+  - title: ACS guidance
+    url: https://www.facs.org/
+---
+## Distal radius fracture
+
+Use a sugar-tong splint for initial immobilization.
+`;
+
+const GUIDE_ENTRY = {
+  id: "distal-radius-fracture",
+  section: "Upper extremity",
+  label: "Distal radius fracture",
+  device: "Sugar-tong splint",
+  bullets: ["Control wrist motion.", "Limit forearm rotation.", "Recheck distal neurovascular status."],
+  warning: "Avoid excessive wrist flexion or tight wrapping.",
+  diagram: "sugar-tong",
+  headingId: "distal-radius-fracture",
+  searchTerms: ["wrist", "colles", "radius"],
+  diagramAlt: "Sugar-tong splint running from the hand around the elbow and back to the hand."
+};
+
 async function createRepository({ note } = {}) {
   const repoRoot = await mkdtemp(path.join(tmpdir(), "ais-build-"));
   await mkdir(path.join(repoRoot, "notes"));
@@ -43,10 +72,27 @@ test("builds a note index, HTML fragment, and cache metadata", async () => {
   const index = JSON.parse(await readFile(path.join(repoRoot, "site/generated/notes-index.json"), "utf8"));
   assert.equal(index.notes[0].fragment, "generated/notes/teg-interpretation.html");
   assert.equal(index.notes[0].html, undefined);
+  assert.equal(index.notes[0].sections, undefined);
   assert.match(await readFile(path.join(repoRoot, "site/generated/notes/teg-interpretation.html"), "utf8"), /Key thresholds/);
   const swMeta = await readFile(path.join(repoRoot, "site/generated/sw-meta.js"), "utf8");
   assert.match(swMeta, /self\.AIS_BUILD_ID = "[a-f0-9]{12}"/);
   assert.match(swMeta, /generated\/notes\/teg-interpretation\.html/);
+});
+
+test("builds and precaches the initial immobilization guide index and section fragments", async () => {
+  const repoRoot = await createRepository({ note: VALID_GUIDE_NOTE });
+
+  await buildSite({ repoRoot, guideEntries: [GUIDE_ENTRY] });
+
+  const guide = JSON.parse(await readFile(path.join(repoRoot, "site/generated/immobilization-guide.json"), "utf8"));
+  assert.equal(guide.entries[0].detailFragment, "generated/notes/initial-immobilization-guide/distal-radius-fracture.html");
+  assert.match(
+    await readFile(path.join(repoRoot, "site/generated/notes/initial-immobilization-guide/distal-radius-fracture.html"), "utf8"),
+    /Use a sugar-tong splint/
+  );
+  const swMeta = await readFile(path.join(repoRoot, "site/generated/sw-meta.js"), "utf8");
+  assert.match(swMeta, /generated\/immobilization-guide\.json/);
+  assert.match(swMeta, /generated\/notes\/initial-immobilization-guide\/distal-radius-fracture\.html/);
 });
 
 test("builds an empty note index and precaches it", async () => {
