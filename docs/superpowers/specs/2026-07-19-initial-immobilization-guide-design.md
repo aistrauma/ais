@@ -1,8 +1,8 @@
 # Initial Immobilization Featured Guide Design
 
-**Date:** 2026-07-19  
-**Status:** Approved for implementation planning  
-**Surface:** Notes tab in the AIS Trauma Reference GitHub Pages app
+- **Date:** 2026-07-19
+- **Status:** Approved for implementation planning
+- **Surface:** Notes tab in the AIS Trauma Reference GitHub Pages app
 
 ## Objective
 

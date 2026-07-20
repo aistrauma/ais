@@ -349,6 +349,12 @@ test("loads the Notes tab assets and routes the shell to the Notes view", async 
   assert.match(guideCss, /\.imm-guide-sections/);
   assert.match(guideCss, /\.imm-guide-entries/);
   assert.match(guideCss, /\.imm-guide-quick/);
-  assert.match(guideCss, /:focus-visible/);
+  assert.match(guideCss, /:focus-visible\{outline:3px solid var\(--accent\)/);
+  assert.match(guideCss, /\.imm-feature\{--immobilization-warning:#[0-9a-f]+;--immobilization-padding:#315c73;/);
+  assert.match(guideCss, /html\.dark \.imm-feature\{--immobilization-warning:#[0-9a-f]+;--immobilization-padding:#a8d7ec;/);
+  assert.match(guideCss, /\.imm-diagram-padding\{[^}]*stroke:var\(--immobilization-padding\)/);
+  for (const [, transition] of guideCss.matchAll(/transition:([^;}]+)/g)) {
+    assert.doesNotMatch(transition, /background-color|border-color|(?:^|,)color(?: |$)/);
+  }
   assert.match(guideCss, /@media\(max-width:767px\)/);
 });
